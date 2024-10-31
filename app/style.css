@@ -1,6 +1,7 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
+  background-color: #b1db3f;
 }
 header {
   background-color: #333;
@@ -11,6 +12,39 @@ header {
   width: 100%;
   z-index: 1;
 }
+/*
+Main Header will consist of three sub classes
+Left-Section: Logo + Name
+Middle-Section: Search Bar
+Right-Section: Profile + Make Post
+*/
+.header {
+  display: flex;
+  height: 55px;
+  justify-content: space-between;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  background-color: #d6ba73;
+  z-index: 100;
+}
+
+.left-section {
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  align-items: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.logo {
+  height: 45px;
+  margin-left: 20px;
+  margin-right: 5px;
+}
+
 header a {
   color: white;
   padding: 8px 16px;
