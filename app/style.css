@@ -57,12 +57,29 @@ Right-Section: Profile + Make Post
   border-radius: 2px;
   box-shadow: inset 1px 2px 3px rgba(0, 0, 0, 0.05);
   /* inset w/ box-shadow puts the shadow inside the box */
-  width: 100px;
+  width: 0;
   /* this enables the search bar to shrink eventhough of flex value 1 */
   border-top-left-radius: 20px;
   border-bottom-left-radius: 20px;
+}
+
+.search-button {
+  width: 66px;
+  height: 40px;
+  background-color: rgb(240, 240, 240);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(192, 192, 192);
+  margin-left: -1px;
+  margin-right: 10px;
   border-top-right-radius: 20px;
   border-bottom-right-radius: 20px;
+  position: relative;
+}
+
+.search-icon {
+  margin-left: -5px;
+  height: 30px;
 }
 
 .right-section {
@@ -73,6 +90,18 @@ Right-Section: Profile + Make Post
   margin-right: 23px;
   flex-shrink: 0;
   /* this means that the flex box of this section will not be able to shrink */
+}
+
+.create-post {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  color: white;
+  padding-left: 20px;
+}
+
+.current-user-picture {
+  height: 35px;
+  border-radius: 20px;
 }
 
 .sidenav {
