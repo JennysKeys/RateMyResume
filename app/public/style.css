@@ -1,9 +1,9 @@
 body {
-  font-family: "Poppins", sans-serif;
-  margin: 0;
-  background-color: white;
-  max-width: 100%;
-  overflow-x: hidden;
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+    background-color: white;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 /*
@@ -13,237 +13,245 @@ Middle-Section: Search Bar
 Right-Section: Profile + Make Post
 */
 .header {
-  display: flex;
-  height: 55px;
-  justify-content: space-between;
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  background-color: black;
-  z-index: 100;
+    display: flex;
+    height: 55px;
+    justify-content: space-between;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    background-color: black;
+    z-index: 100;
 }
 
 .left-section {
-  display: flex;
-  align-items: center;
-  color: white;
-  font-size: 20px;
-  font-weight: 700;
-  margin-left: 20px;
+    display: flex;
+    align-items: center;
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    margin-left: 20px;
 }
 
 .logo {
-  height: 45px;
-  margin-right: 5px;
+    height: 45px;
+    margin-right: 5px;
 }
 
 .middle-section {
-  flex: 1;
-  margin-left: 35px;
-  margin-right: 35px;
-  max-width: 650px;
-  display: flex;
-  align-items: center;
+    flex: 1;
+    margin-left: 35px;
+    margin-right: 35px;
+    max-width: 650px;
+    display: flex;
+    align-items: center;
 }
 
 .search-bar {
-  flex: 1;
-  height: 36px;
-  padding-left: 10px;
-  font-size: 16px;
-  border-width: 1px;
-  border-style: solid;
-  border-color: rgb(192, 192, 192);
-  border-radius: 2px;
-  box-shadow: inset 1px 2px 3px rgba(0, 0, 0, 0.05);
-  background-color: #dfdfdf;
-  /* inset w/ box-shadow puts the shadow inside the box */
-  width: 0;
-  /* this enables the search bar to shrink eventhough of flex value 1 */
-  border-top-left-radius: 20px;
-  border-bottom-left-radius: 20px;
+    flex: 1;
+    height: 36px;
+    padding-left: 10px;
+    font-size: 16px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(192, 192, 192);
+    border-radius: 2px;
+    box-shadow: inset 1px 2px 3px rgba(0, 0, 0, 0.05);
+    background-color: #dfdfdf;
+    /* inset w/ box-shadow puts the shadow inside the box */
+    width: 0;
+    /* this enables the search bar to shrink eventhough of flex value 1 */
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
 }
 
 .search-button {
-  width: 66px;
-  height: 40px;
-  background-color: #dfdfdf;
-  border-width: 1px;
-  border-style: solid;
-  border-color: rgb(192, 192, 192);
-  margin-left: -1px;
-  margin-right: 10px;
-  border-top-right-radius: 20px;
-  border-bottom-right-radius: 20px;
-  position: relative;
+    width: 66px;
+    height: 40px;
+    background-color: #dfdfdf;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(192, 192, 192);
+    margin-left: -1px;
+    margin-right: 10px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    position: relative;
 }
 
 .search-icon {
-  margin-left: -5px;
-  height: 30px;
+    margin-left: -5px;
+    height: 30px;
 }
 
 .right-section {
-  width: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-right: 23px;
-  flex-shrink: 0;
-  /* this means that the flex box of this section will not be able to shrink */
+    width: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-right: 23px;
+    flex-shrink: 0;
+    /* this means that the flex box of this section will not be able to shrink */
 }
 
 .create-post {
-  color: white;
-  padding-left: 20px;
+    color: white;
+    padding-left: 20px;
 }
 
 .profile {
-  height: 25px;
-  border-radius: 20px;
+    height: 25px;
+    border-radius: 20px;
 }
 /* Base styles for the right-section elements */
 .right-section .create-post,
 .right-section .profile-container {
-  display: flex;
-  justify-content: center;
-  position: relative;
-  align-items: center;
-  cursor: pointer;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    align-items: center;
+    cursor: pointer;
 }
 
 .right-section .create-post::after,
 .right-section .profile-container::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  transform: translateX(-20%);
-  background-color: gray;
-  color: white;
-  padding: 5px 8px;
-  border-radius: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.5s;
-  pointer-events: none;
-  bottom: -50px;
+    content: attr(data-tooltip);
+    position: absolute;
+    transform: translateX(-20%);
+    background-color: gray;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+    bottom: -50px;
 }
 
 .right-section .create-post:hover::after,
 .right-section .profile-container:hover::after {
-  opacity: 1;
-  visibility: visible;
+    opacity: 1;
+    visibility: visible;
 }
 
 .sidenav {
-  height: 100%;
-  position: fixed;
-  top: 50px;
-  background-color: #ffffff;
-  overflow-x: hidden;
-  transition: 0.5s;
-  padding-top: 20px;
-  width: 250px;
-  z-index: 1;
-  border: 1px solid #ddd;
+    height: 100%;
+    position: fixed;
+    top: 50px;
+    background-color: #ffffff;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 20px;
+    width: 250px;
+    z-index: 1;
+    border: 1px solid #ddd;
 }
 
 .sidenav a {
-  padding: 8px 16px;
-  text-decoration: none;
-  font-size: 25px;
-  color: #818181;
-  display: block;
-  transition: 0.3s;
-  text-align: left;
-  text-indent: 5%;
+    padding: 8px 16px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+    text-align: left;
+    text-indent: 5%;
 }
 
 .sidenav a:hover {
-  color: #f1f1f1;
+    color: #f1f1f1;
 }
 
 #main {
-  transition: margin-left 0.5s;
-  padding-top: 60px;
-  margin-left: 275px;
-  flex-grow: 1;
+    transition: margin-left 0.5s;
+    padding-top: 60px;
+    margin-left: 275px;
+    flex-grow: 1;
 }
 
 #card-container {
-  display: flex;
-  flex-wrap: wrap;
+    display: flex;
+    position: relative;
+    flex-wrap: wrap;
 }
 
 .card {
-  height: 55vh;
-  width: calc(60% - 16px);
-  margin: 8px;
-  border-radius: 10px;
-  transition: all 200ms ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 100px;
-  margin-right: auto;
-  border: 1px solid #ddd;
+    height: 55vh;
+    position: relative;
+    width: calc(60% - 16px);
+    margin: 8px;
+    border-radius: 10px;
+    transition: all 200ms ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 100px;
+    margin-right: auto;
+    border: 1px solid #ddd;
 }
 
 .card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .card-actions {
-  margin: 8px;
-  padding: 16px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    margin: 8px;
+    padding: 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
-
+.card-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px; /* Adjust size as needed */
+    color: inherit; /* Makes the icon inherit the color of the surrounding text */
+}
 #loader {
-  position: relative;
-  display: flex;
+    position: relative;
+    display: flex;
 }
 
 .skeleton-card {
-  height: 55vh;
-  width: calc(60% - 16px);
-  margin: 8px;
-  border-radius: 10px;
-  transition: all 200ms ease-in-out;
-  position: relative;
-  background-color: #eaeaea;
-  margin-left: 100px;
-  margin-right: auto;
+    height: 55vh;
+    width: calc(60% - 16px);
+    margin: 8px;
+    border-radius: 10px;
+    transition: all 200ms ease-in-out;
+    position: relative;
+    background-color: #eaeaea;
+    margin-left: 100px;
+    margin-right: auto;
 }
 
 .skeleton-card::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  transform: translateX(-100%);
-  background-image: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0,
-    rgba(255, 255, 255, 0.2) 20%,
-    rgba(255, 255, 255, 0.5) 60%,
-    rgba(255, 255, 255, 0)
-  );
-  animation: load 1s infinite;
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0,
+        rgba(255, 255, 255, 0.2) 20%,
+        rgba(255, 255, 255, 0.5) 60%,
+        rgba(255, 255, 255, 0)
+    );
+    animation: load 1s infinite;
 }
 
 @keyframes load {
-  100% {
-    transform: translateX(100%);
-  }
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
-  .skeleton-card::after {
-    animation: none;
-  }
+    .skeleton-card::after {
+        animation: none;
+    }
 }
