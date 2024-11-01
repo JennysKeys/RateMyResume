@@ -10,17 +10,18 @@
     />
 
     <title>Rate My Resume</title>
+
     <style></style>
   </head>
   <body>
     <div class="header">
       <div class="left-section">
-        <img class="logo" src="icons/logo.png" />
+        <img style="margin-left: 0px" class="logo" src="icons/logo.png" />
         <div>RateMyResume</div>
       </div>
 
       <div class="middle-section">
-        <input class="search-bar" type="text" placeholder="Search" />
+        <input class="search-bar" type="text" placeholder="Search RMR" />
         <button class="search-button">
           <img class="search-icon" src="icons/search.svg" alt="Search Icon" />
         </button>
@@ -33,17 +34,20 @@
     </div>
 
     <div id="mySidenav" class="sidenav">
-      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"
-        >&times;</a
-      >
-      <a href="#">About</a>
       <a href="#">Home</a>
       <a href="#">Popular</a>
       <a href="#">For You</a>
+      <a href="#">All</a>
     </div>
 
     <div id="main">
-      <h2>Welcome to Rate My Resume</h2>
+      <!-- <h2>Welcome to Rate My Resume</h2> -->
+      <div id="card-container"></div>
+
+      <div id="loader">
+        <div class="skeleton-card"></div>
+      </div>
+      <div class="card-actions"></div>
     </div>
 
     <script src="sideBarNav.js"></script>

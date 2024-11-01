@@ -2,6 +2,8 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   background-color: white;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /*
@@ -56,6 +58,7 @@ Right-Section: Profile + Make Post
   border-color: rgb(192, 192, 192);
   border-radius: 2px;
   box-shadow: inset 1px 2px 3px rgba(0, 0, 0, 0.05);
+  background-color: #dfdfdf;
   /* inset w/ box-shadow puts the shadow inside the box */
   width: 0;
   /* this enables the search bar to shrink eventhough of flex value 1 */
@@ -66,7 +69,7 @@ Right-Section: Profile + Make Post
 .search-button {
   width: 66px;
   height: 40px;
-  background-color: rgb(240, 240, 240);
+  background-color: #dfdfdf;
   border-width: 1px;
   border-style: solid;
   border-color: rgb(192, 192, 192);
@@ -106,15 +109,17 @@ Right-Section: Profile + Make Post
 
 .sidenav {
   height: 100%;
-  width: 0;
   position: fixed;
   top: 50px;
-  left: 0;
-  background-color: #111;
+  background-color: #ffffff;
   overflow-x: hidden;
   transition: 0.5s;
   padding-top: 20px;
+  width: 250px;
+  z-index: 1;
+  border: 1px solid #ddd;
 }
+
 .sidenav a {
   padding: 8px 16px;
   text-decoration: none;
@@ -122,19 +127,95 @@ Right-Section: Profile + Make Post
   color: #818181;
   display: block;
   transition: 0.3s;
+  text-align: left;
+  text-indent: 5%;
 }
+
 .sidenav a:hover {
   color: #f1f1f1;
 }
 
-.sidenav .closebtn {
-  position: absolute;
-  top: 0;
-  right: 25px;
-  font-size: 36px;
-  margin-left: 50px;
-}
 #main {
   transition: margin-left 0.5s;
   padding-top: 60px;
+  margin-left: 275px;
+  flex-grow: 1;
+}
+
+#card-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.card {
+  height: 55vh;
+  width: calc(60% - 16px);
+  margin: 8px;
+  border-radius: 10px;
+  transition: all 200ms ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 100px;
+  margin-right: auto;
+  border: 1px solid #ddd;
+}
+
+.card:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.card-actions {
+  margin: 8px;
+  padding: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#loader {
+  position: relative;
+  display: flex;
+}
+
+.skeleton-card {
+  height: 55vh;
+  width: calc(60% - 16px);
+  margin: 8px;
+  border-radius: 10px;
+  transition: all 200ms ease-in-out;
+  position: relative;
+  background-color: #eaeaea;
+  margin-left: 100px;
+  margin-right: auto;
+}
+
+.skeleton-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.5) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: load 1s infinite;
+}
+
+@keyframes load {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .skeleton-card::after {
+    animation: none;
+  }
 }
