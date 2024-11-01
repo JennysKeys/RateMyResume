@@ -1,5 +1,5 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Poppins", sans-serif;
   margin: 0;
   background-color: white;
   max-width: 100%;
@@ -25,17 +25,16 @@ Right-Section: Profile + Make Post
 }
 
 .left-section {
-  font-family: "Poppins", sans-serif;
   display: flex;
   align-items: center;
   color: white;
   font-size: 20px;
   font-weight: 700;
+  margin-left: 20px;
 }
 
 .logo {
   height: 45px;
-  margin-left: 20px;
   margin-right: 5px;
 }
 
@@ -43,7 +42,7 @@ Right-Section: Profile + Make Post
   flex: 1;
   margin-left: 35px;
   margin-right: 35px;
-  max-width: 700px;
+  max-width: 650px;
   display: flex;
   align-items: center;
 }
@@ -96,15 +95,44 @@ Right-Section: Profile + Make Post
 }
 
 .create-post {
-  font-family: "Poppins", sans-serif;
-  font-weight: 500;
   color: white;
   padding-left: 20px;
 }
 
-.current-user-picture {
-  height: 35px;
+.profile {
+  height: 25px;
   border-radius: 20px;
+}
+/* Base styles for the right-section elements */
+.right-section .create-post,
+.right-section .profile-container {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  align-items: center;
+  cursor: pointer;
+}
+
+.right-section .create-post::after,
+.right-section .profile-container::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  transform: translateX(-20%);
+  background-color: gray;
+  color: white;
+  padding: 5px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+  bottom: -50px;
+}
+
+.right-section .create-post:hover::after,
+.right-section .profile-container:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 .sidenav {
