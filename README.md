@@ -1,5 +1,12 @@
 # RateMyResume
 
+## Instructions:
+1) Open project
+2) Run `npm run start`
+    - The console should say `Listening at: http://localhost:3000`
+3) Open a new tab on your browser
+4) Go to `http://localhost:3000`
+
 ## Contract:
 - [ ] Deploy
 - [ ] Upload resume + parse
