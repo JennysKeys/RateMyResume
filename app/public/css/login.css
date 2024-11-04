@@ -1,3 +1,4 @@
+/*
 .header {
     display: flex;
     justify-content: space-between;
@@ -10,6 +11,7 @@
     top: 0;
     z-index: 1000;
 }
+*/
 
 body {
     padding-top: 60px;
