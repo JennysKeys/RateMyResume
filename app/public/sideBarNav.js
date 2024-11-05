@@ -125,6 +125,7 @@ function changeToPostScreen() {
     })
     .catch((error) => console.error("Error loading create.html:", error));
 }
+
 document
   .getElementById("createButton")
   .addEventListener("click", changeToPostScreen);
