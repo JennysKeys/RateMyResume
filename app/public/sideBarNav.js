@@ -120,9 +120,7 @@ window.addEventListener("scroll", handleInfiniteScroll);
 function changeToPostScreen() {
   fetch("createPost.html")
     .then((response) => response.text())
-    .then((data) => {
-      document.getElementById("main").innerHTML = data;
-    })
+    .then((data) => {})
     .catch((error) => console.error("Error loading create.html:", error));
 }
 

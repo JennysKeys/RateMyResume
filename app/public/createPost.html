@@ -4,13 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PDF Upload Page</title>
+    <link rel="stylesheet" type="text/css" href="css/createPost.css" />
   </head>
   <body>
-    <h1>Upload a PDF Fileadasdasas</h1>
-    <input type="file" id="fileInput" accept=".pdf" />
-    <button id="uploadButton">Upload PDF</button>
-    <div id="message"></div>
+    <h1>Create Post</h1>
+    <div class="title-input-container">
+      <input type="text" id="title" placeholder="Title" required />
+    </div>
 
-    <script src="upload.js"></script>
+    <div class="drop-file-input-container" id="dropArea">
+      <label for="inputPDF" id="drop-area">
+        <input id="inputPDF" type="file" accept=".pdf" hidden />
+        <div id="pdf-view">
+          <p>Drag and Drop or Click here<br />to upload PDF</p>
+          <span class="bottom-text">Upload any PDF from desktop</span>
+        </div>
+      </label>
+    </div>
+
+    <button id="uploadButton">Upload PDF</button>
+
+    <script src="createPost.js"></script>
   </body>
 </html>
