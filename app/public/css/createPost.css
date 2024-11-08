@@ -1,4 +1,4 @@
-input[type="text"] {
+.text-input {
   width: 60%;
   padding: 10px;
   border: 1px solid #ccc;
@@ -6,6 +6,10 @@ input[type="text"] {
   font-size: 16px;
   margin-bottom: 20px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pad {
+  padding-left: 120px;
 }
 
 .title-input-container::after {
