@@ -3,7 +3,7 @@ const app = express();
 
 const port = 3000;
 const hostname = "localhost";
-const dotenv = require("dotenv").config();
+// const dotenv = require("dotenv").config();
 
 app.use(express.static("public"));
 app.use(express.json());
