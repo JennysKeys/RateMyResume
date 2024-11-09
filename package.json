@@ -1,6 +1,11 @@
 {
     "dependencies": {
-        "express": "^4.21.1"
+        "bcryptjs": "^2.4.3",
+        "dotenv": "^16.4.5",
+        "express": "^4.21.1",
+        "jsonwebtoken": "^9.0.2",
+        "passport": "^0.7.0",
+        "passport-local": "^1.0.0"
     },
     "scripts": {
         "start": "cd app && node server.js"
