@@ -12,38 +12,36 @@ app.use(express.static("public"));
 app.use(express.json());
 /* YOUR CODE HERE */
 
-const {PGHOST, PGDATABASE, PGUSER, PGPASSWORD} = process.env;
+const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
 
-const pool = new Pool({
-    host: PGHOST,
-    database: PGDATABASE, 
-    username: PGUSER,
-    password: PGPASSWORD,
-    port: 5432,
-    ssl: {
-        require: true,
-    }
-})
+// const pool = new Pool({
+//   host: PGHOST,
+//   database: PGDATABASE,
+//   username: PGUSER,
+//   password: PGPASSWORD,
+//   port: 5432,
+//   ssl: {
+//     require: true,
+//   },
+// });
 
-app.get("/database", async(req, res) => {
-
+app.get("/database", async (req, res) => {
     console.log("connected");
     const client = await pool.connect();
 
-    try{
-
+    try {
         const result = await pool.query("SELECT * FROM users");
 
         console.log(result.rows);
         res.json(result.rows);
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     } finally {
-        client.release()
+        client.release();
     }
 
     res.status(404);
-})
+});
 
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);

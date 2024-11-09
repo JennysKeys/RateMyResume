@@ -5,6 +5,13 @@
   margin-left: 200px;
   flex-grow: 1;
 }
+/* .main-content {
+  padding-top: 60px;
+  padding-left: 220px;
+  padding-right: 20px;
+  min-height: calc(100vh - 60px);
+  box-sizing: border-box;
+} */
 
 #card-container {
   display: flex;

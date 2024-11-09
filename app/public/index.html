@@ -22,8 +22,10 @@
   <body>
     <div class="header">
       <div class="left-section">
-        <img class="logo" src="icons/logo.png" />
-        <div>RateMyResume</div>
+        <a href="index.html" class="header-link">
+          <img class="logo" src="icons/logo.png" />
+          <div>RateMyResume</div>
+        </a>
       </div>
 
       <div class="middle-section">
@@ -38,15 +40,18 @@
           <i class="fa-solid fa-message">‌</i>
         </button>
         <div
+          id="createButton"
           class="create-post"
           data-tooltip="Create post"
           style="color: rgb(62, 62, 62)"
         >
           + Create
         </div>
-        <div class="profile-container" data-tooltip="Open Profile">
-          <img class="profile" src="icons/profile.jpeg" alt="User Profile" />
-        </div>
+        <a href="login.html">
+          <div class="profile-container" data-tooltip="Open Profile">
+            <img class="profile" src="icons/profile.jpeg" alt="User Profile" />
+          </div>
+        </a>
       </div>
     </div>
 
@@ -70,9 +75,8 @@
       <div><a href="#">User Agreement</a></div>
     </div>
 
-    <div id="main">
+    <div id="main" class="main-content">
       <div id="card-container"></div>
-
       <div id="loader">
         <div class="skeleton-card"></div>
       </div>
@@ -80,5 +84,18 @@
     </div>
 
     <script src="sideBarNav.js"></script>
+    <script>
+      document
+        .getElementById("createButton")
+        .addEventListener("click", function () {
+          const mainContainer = document.getElementById("main");
+
+          fetch("createPost.html")
+            .then((response) => response.text())
+            .then((html) => {
+              mainContainer.innerHTML = html;
+            });
+        });
+    </script>
   </body>
 </html>
