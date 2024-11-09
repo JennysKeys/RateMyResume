@@ -15,6 +15,28 @@
 .left-section {
   display: flex;
   align-items: center;
+}
+
+.header-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.header-link img {
+  margin-right: 10px;
+  height: 40px;
+}
+
+.header-link div {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
   color: rgb(152, 209, 66);
   font-size: 20px;
   font-weight: 700;
