@@ -44,54 +44,94 @@ let createCardBtn = (icon, bottom, left, id, onClick) => {
   return button;
 };
 
-let createCard = (cardNumber) => {
-  let card = document.createElement("div");
-  card.className = "card";
+let offset = 0;
+const limit = 2; //Number of posts to load per batch
 
-  let buttonUp = createCardBtn(
-    "fas fa-arrow-up",
-    "10px",
-    "10px",
-    `buttonUp${cardNumber}`,
-    () => console.log("up button clicked")
-  );
-  let buttonDown = createCardBtn(
-    "fas fa-arrow-down",
-    "10px",
-    "50px",
-    `buttonDown${cardNumber}`,
-    () => console.log("down button clicked")
-  );
-  let buttonComment = createCardBtn(
-    "fas fa-comment",
-    "10px",
-    "90px",
-    `buttonComment${cardNumber}`,
-    () => console.log("comment button clicked")
-  );
-  let buttonSave = createCardBtn(
-    "fas fa-bookmark",
-    "10px",
-    "130px",
-    `buttonSave${cardNumber}`,
-    () => console.log("save button clicked")
-  );
-  let buttonShare = createCardBtn(
-    "fas fa-share",
-    "10px",
-    "170px",
-    `buttonShare${cardNumber}`,
-    () => console.log("share button clicked")
-  );
+async function loadPosts() {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/posts?limit=${limit}&offset=${offset}`
+    );
+    const posts = await response.json();
+    offset += limit;
 
-  card.appendChild(buttonUp);
-  card.appendChild(buttonDown);
-  card.appendChild(buttonComment);
-  card.appendChild(buttonSave);
-  card.appendChild(buttonShare);
+    posts.forEach((post, index) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      //Header div for username and date
+      const headerContainer = document.createElement("div");
+      headerContainer.className = "card-header";
+      const usernameElement = document.createElement("h3");
+      usernameElement.textContent = post.username;
+      const dateElement = document.createElement("p");
+      dateElement.textContent = post.created_at;
 
-  cardContainer.appendChild(card);
-};
+      headerContainer.appendChild(usernameElement);
+      headerContainer.appendChild(dateElement);
+
+      //Div container for the title of the post
+      const titleContainer = document.createElement("div");
+      titleContainer.className = "card-title";
+      const titleElement = document.createElement("h2");
+      titleElement.textContent = post.title;
+      titleContainer.appendChild(titleElement);
+
+      card.appendChild(headerContainer);
+      card.appendChild(document.createElement("hr"));
+      card.appendChild(titleContainer);
+
+      let buttonUp = createCardBtn(
+        "fas fa-arrow-up",
+        "10px",
+        "10px",
+        `buttonUp${index + offset}`,
+        () => console.log("up button clicked")
+      );
+      let buttonDown = createCardBtn(
+        "fas fa-arrow-down",
+        "10px",
+        "50px",
+        `buttonDown${index + offset}`,
+        () => console.log("down button clicked")
+      );
+      let buttonComment = createCardBtn(
+        "fas fa-comment",
+        "10px",
+        "90px",
+        `buttonComment${index + offset}`,
+        () => console.log("comment button clicked")
+      );
+      let buttonSave = createCardBtn(
+        "fas fa-bookmark",
+        "10px",
+        "130px",
+        `buttonSave${index + offset}`,
+        () => console.log("save button clicked")
+      );
+      let buttonShare = createCardBtn(
+        "fas fa-share",
+        "10px",
+        "170px",
+        `buttonShare${index + offset}`,
+        () => console.log("share button clicked")
+      );
+
+      card.appendChild(buttonUp);
+      card.appendChild(buttonDown);
+      card.appendChild(buttonComment);
+      card.appendChild(buttonSave);
+      card.appendChild(buttonShare);
+
+      cardContainer.appendChild(card);
+    });
+
+    if (posts.length < limit) {
+      removeInfiniteScroll();
+    }
+  } catch (error) {
+    console.error("Error loading posts:", error);
+  }
+}
 
 let handleInfiniteScroll = () => {
   throttle(() => {
@@ -99,11 +139,9 @@ let handleInfiniteScroll = () => {
       window.innerHeight + window.pageYOffset >= document.body.offsetHeight;
 
     if (endOfPage) {
-      cardNum += 1;
-      console.log(cardNum);
-      createCard(cardNum);
+      loadPosts();
     }
-  }, 10);
+  }, 100);
 };
 
 let removeInfiniteScroll = () => {
@@ -112,7 +150,7 @@ let removeInfiniteScroll = () => {
 };
 
 window.onload = function () {
-  createCard();
+  loadPosts();
 };
 
 window.addEventListener("scroll", handleInfiniteScroll);
