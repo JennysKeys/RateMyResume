@@ -1,10 +1,10 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const express = require("express");
-const bcrypt = require('bcryptjs');
-const passport = require('passport');
-const jwt = require('jsonwebtoken');
-const LocalStrategy = require('passport-local').Strategy;
+const bcrypt = require("bcryptjs");
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
+const LocalStrategy = require("passport-local").Strategy;
 
 const app = express();
 
@@ -15,9 +15,9 @@ const dotenv = require("dotenv").config();
 const cors = require("cors");
 const { Pool } = require("pg");
 
-const path = require('path');
+const path = require("path");
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(passport.initialize());
 
@@ -25,67 +25,73 @@ app.use(passport.initialize());
 
 const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
 
-// const pool = new Pool({
-//   host: PGHOST,
-//   database: PGDATABASE,
-//   username: PGUSER,
-//   password: PGPASSWORD,
-//   port: 5432,
-//   ssl: {
-//     require: true,
-//   },
-// });
+const pool = new Pool({
+  host: PGHOST,
+  database: PGDATABASE,
+  username: PGUSER,
+  password: PGPASSWORD,
+  port: 5432,
+  ssl: {
+    require: true,
+  },
+});
 
 app.get("/database", async (req, res) => {
-    console.log("connected");
-    const client = await pool.connect();
-
-    try {
-        const result = await pool.query("SELECT * FROM users");
-
-        console.log(result.rows);
-        res.json(result.rows);
-    } catch (error) {
-        console.log(error);
-    } finally {
-        client.release();
-    }
-
-    res.status(404);
+  console.log("connected");
+  const client = await pool.connect();
+  try {
+    const result = await pool.query("SELECT * FROM users");
+    console.log(result.rows);
+    res.json(result.rows);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    client.release();
+  }
+  res.status(404);
 });
 
 const users = [
   {
-    username: 'testuser',
-    password: '$2a$10$1C0PmG9y2rh9Y1uA2/O69uRhbA8e1zpxrqXXyExIQoZdv5t31/rUW', // bcrypt hashed password for 'testpassword'
+    username: "testuser",
+    password: "$2a$10$1C0PmG9y2rh9Y1uA2/O69uRhbA8e1zpxrqXXyExIQoZdv5t31/rUW", // bcrypt hashed password for 'testpassword'
   },
 ];
 
-passport.use(new LocalStrategy((username, password, done) => {
-  const user = users.find(u => u.username === username);
-  if (!user) return done(null, false, { message: 'Invalid credentials' });
+passport.use(
+  new LocalStrategy((username, password, done) => {
+    const user = users.find((u) => u.username === username);
+    if (!user) return done(null, false, { message: "Invalid credentials" });
 
-  bcrypt.compare(password, user.password, (err, isMatch) => {
-    if (err) return done(err);
-    if (!isMatch) return done(null, false, { message: 'Invalid credentials' });
-    return done(null, user);
-  });
-}));
-app.post('/login', (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) return res.status(500).json({ success: false, message: err.message });
-    if (!user) return res.status(401).json({ success: false, message: info.message });
+    bcrypt.compare(password, user.password, (err, isMatch) => {
+      if (err) return done(err);
+      if (!isMatch)
+        return done(null, false, { message: "Invalid credentials" });
+      return done(null, user);
+    });
+  })
+);
+app.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err)
+      return res.status(500).json({ success: false, message: err.message });
+    if (!user)
+      return res.status(401).json({ success: false, message: info.message });
 
-    const token = jwt.sign({ id: user.id, username: user.username }, jwtSecret, { expiresIn: '1h' });
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      jwtSecret,
+      { expiresIn: "1h" }
+    );
 
     res.json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       token: token,
     });
   })(req, res, next);
 });
 
 app.listen(port, hostname, () => {
-    console.log(`Listening at: http://${hostname}:${port}`);
+  console.log(`Listening at: http://${hostname}:${port}`);
 });
