@@ -11,8 +11,12 @@ const app = express();
 const port = 3000;
 const jwtSecret = process.env.JWT_SECRET;
 const hostname = "localhost";
+const dotenv = require("dotenv").config();
+const cors = require("cors");
+const { Pool } = require("pg");
 
 const path = require('path');
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(passport.initialize());
@@ -32,7 +36,23 @@ const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
 //   },
 // });
 
-app.get("/", async () => {});
+app.get("/database", async (req, res) => {
+    console.log("connected");
+    const client = await pool.connect();
+
+    try {
+        const result = await pool.query("SELECT * FROM users");
+
+        console.log(result.rows);
+        res.json(result.rows);
+    } catch (error) {
+        console.log(error);
+    } finally {
+        client.release();
+    }
+
+    res.status(404);
+});
 
 const users = [
   {
@@ -67,5 +87,5 @@ app.post('/login', (req, res, next) => {
 });
 
 app.listen(port, hostname, () => {
-  console.log(`Listening at: http://${hostname}:${port}`);
+    console.log(`Listening at: http://${hostname}:${port}`);
 });
