@@ -6,7 +6,7 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const LocalStrategy = require("passport-local").Strategy;
 
-const multer = require('multer');
+const multer = require("multer");
 
 const app = express();
 
@@ -115,29 +115,29 @@ app.get("/posts", async (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-app.post('/postss', upload.single('pdf'), async (req, res) => {
-  const { title, created_at, user_uuid } = req.body;
-  const pdfBuffer = req.file ? req.file.buffer : null; 
+app.post("/postss", upload.single("pdf"), async (req, res) => {
+    const { title, created_at, user_uuid } = req.body;
+    const pdfBuffer = req.file ? req.file.buffer : null;
 
+    if (!title || !pdfBuffer || !user_uuid) {
+        return res
+            .status(400)
+            .send("Title, PDF file, and userID are required.");
+    }
 
-  if (!title || !pdfBuffer || !user_uuid) {
-    return res.status(400).send('Title, PDF file, and userID are required.');
-  }
-
-  try {
-    const query = `
+    try {
+        const query = `
       INSERT INTO Posts (title, pdf, created_at, userid)
       VALUES ($1, $2, CURRENT_TIMESTAMP, $3)
     `;
-    const values = [title, pdfBuffer, user_uuid];
+        const values = [title, pdfBuffer, user_uuid];
 
-    await pool.query(query, values);
-    res.status(201).send('Post uploaded successfully!');
-  } catch (error) {
-    res.status(500).send('Failed to upload post.');
-  }
+        await pool.query(query, values);
+        res.status(201).send("Post uploaded successfully!");
+    } catch (error) {
+        res.status(500).send("Failed to upload post.");
+    }
 });
-
 
 const users = [
     {
