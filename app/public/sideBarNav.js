@@ -155,52 +155,112 @@ window.onload = function () {
 
 window.addEventListener("scroll", handleInfiniteScroll);
 
-document.getElementById("createButton").addEventListener("click", function () {
-  console.log("hihih")
+
+const pdfDisplay = document.getElementById("pdfDisplay");
+const createPostPage = document.getElementById("createButton");
+const post = document.getElementById("postButtom");
+
+
+createPostPage.addEventListener("click", function () {
   const mainContainer = document.getElementById("main");
 
   fetch("createPost.html")
     .then((response) => response.text())
     .then((html) => {
-      console.log("hi")
       mainContainer.innerHTML = html;
       const inputPDF = document.getElementById("inputPDF");
+      const postButton = document.getElementById("postButton");
 
       inputPDF.addEventListener("change", handleFiles);
+      postButton.addEventListener("click", uploadPost);
+
     });
 });
 
-const pdfDisplay = document.getElementById("pdfDisplay");
+let selectedFile = null; 
 
 function handleFiles(event) {
   const files = event.target.files;
   if (files.length > 0) {
-    const file = files[0];
-    if (file.type === "application/pdf") {
-      const fileURL = URL.createObjectURL(file);
+    selectedFile = files[0]; 
+    if (selectedFile.type === "application/pdf") {
+      const fileURL = URL.createObjectURL(selectedFile);
       
-      // Create an iframe to display the PDF
       const pdfDisplay = document.createElement("iframe");
       pdfDisplay.src = fileURL;
 
-
-      // Get the drop file input container
       const dropFileInputContainer = document.getElementById("dropArea");
 
-      // Remove existing children without using innerHTML
       while (dropFileInputContainer.firstChild) {
         dropFileInputContainer.removeChild(dropFileInputContainer.firstChild);
       }
 
-      // Append the new PDF display
       dropFileInputContainer.appendChild(pdfDisplay);
     } else {
       alert("Please upload a valid PDF file.");
     }
   }
 }
+async function uploadPost() {
+  const titleInput = document.getElementById("title");
+  const title = titleInput.value.trim();
+  const errorMessageDiv = document.getElementById("errorMessage");
+  const successMessageDiv = document.getElementById("successMessage");
 
+  // Clear previous messages
+  errorMessageDiv.textContent = "";
+  successMessageDiv.textContent = "";
 
+  if (!title) {
+      errorMessageDiv.textContent = "Please enter a title.";
+      return;
+  }
 
+  if (!selectedFile) {
+      errorMessageDiv.textContent = "Please upload a PDF file.";
+      return;
+  }
 
+  const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d"; 
+  const createdAt = new Date().toISOString(); 
 
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("pdf", selectedFile);
+  formData.append("created_at", createdAt);
+  formData.append("user_uuid", userUUID);
+
+  try {
+      const response = await fetch("/postss", {
+          method: "POST",
+          body: formData,
+      });
+
+      if (response.ok) {
+          titleInput.value = "";
+          selectedFile = null; 
+
+          // Reset the drop area
+          const dropArea = document.getElementById("dropArea");
+          dropArea.innerHTML = `
+              <label for="inputPDF" id="drop-area">
+                  <input id="inputPDF" type="file" accept=".pdf" hidden />
+                  <div id="pdf-view">
+                      <p>Drag and Drop or Click here<br />to upload PDF</p>
+                      <span class="bottom-text">Upload any PDF from desktop</span>
+                  </div>
+              </label>
+          `;
+
+          // Reattach the event listener to the new input
+          const inputPDF = document.getElementById("inputPDF");
+          inputPDF.addEventListener("change", handleFiles);
+
+          successMessageDiv.textContent = "Post uploaded successfully!";
+      } else {
+          errorMessageDiv.textContent = "Failed to upload post.";
+      }
+  } catch (error) {
+      errorMessageDiv.textContent = "An error occurred: " + error.message;
+  }
+}
