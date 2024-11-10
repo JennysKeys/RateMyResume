@@ -137,12 +137,16 @@
             <div class="card-actions"></div>
         </div>
 
-        <button class="open-button" onclick="openForm()">Followers List</button>
+        <button class="open-button" onclick="openFollowersList()">
+            Followers List
+        </button>
 
         <div class="chat-popup" id="myForm">
             <div class="form-container">
                 <h2>Followers List</h2>
-                <span class="close-button" onclick="closeForm()">&times;</span>
+                <span class="close-button" onclick="closeFollowersList()"
+                    >&times;</span
+                >
                 <ul id="followers-list" class="scroll-container"></ul>
             </div>
         </div>
