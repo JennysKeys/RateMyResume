@@ -94,3 +94,20 @@ input[type="file"] {
 #postButton:hover {
   background-color: #45a049;
 }
+
+#removeButton {
+  background-color: #FF0000; 
+  color: white; 
+  border:  none;
+  border-radius: 4px; 
+  font-size: 16px; 
+  cursor: pointer; 
+  transition: background-color 0.3s; 
+  margin-top: -25px;
+  padding: 10px 24px;
+  margin-left:5px;  
+}
+
+#removeButton:hover {
+  background-color: #CC0000;
+}

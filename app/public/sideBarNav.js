@@ -171,9 +171,11 @@ createPostPage.addEventListener("click", function () {
       const inputPDF = document.getElementById("inputPDF");
       const postButton = document.getElementById("postButton");
 
+      const removeButton = document.getElementById("removeButton");
+
       inputPDF.addEventListener("change", handleFiles);
       postButton.addEventListener("click", uploadPost);
-
+      removeButton.addEventListener("click", removePost);
     });
 });
 
@@ -182,25 +184,25 @@ let selectedFile = null;
 function handleFiles(event) {
   const files = event.target.files;
   if (files.length > 0) {
-    selectedFile = files[0]; 
-    if (selectedFile.type === "application/pdf") {
-      const fileURL = URL.createObjectURL(selectedFile);
-      
-      const pdfDisplay = document.createElement("iframe");
-      pdfDisplay.src = fileURL;
+      selectedFile = files[0]; 
+      if (selectedFile.type === "application/pdf") {
+          const fileURL = URL.createObjectURL(selectedFile);
+          
+          const pdfDisplay = document.createElement("iframe");
+          pdfDisplay.src = fileURL;
 
-      const dropFileInputContainer = document.getElementById("dropArea");
+          const dropFileInputContainer = document.getElementById("dropArea");
+          dropFileInputContainer.innerHTML = ""; // Clear previous content
+          dropFileInputContainer.appendChild(pdfDisplay);
 
-      while (dropFileInputContainer.firstChild) {
-        dropFileInputContainer.removeChild(dropFileInputContainer.firstChild);
+          // Show the Remove PDF button
+          document.getElementById("removeButton").style.display = "inline-block";
+      } else {
+          alert("Please upload a valid PDF file.");
       }
-
-      dropFileInputContainer.appendChild(pdfDisplay);
-    } else {
-      alert("Please upload a valid PDF file.");
-    }
   }
 }
+
 async function uploadPost() {
   const titleInput = document.getElementById("title");
   const title = titleInput.value.trim();
@@ -263,4 +265,25 @@ async function uploadPost() {
   } catch (error) {
       errorMessageDiv.textContent = "An error occurred: " + error.message;
   }
+}
+
+function removePost() {
+  selectedFile = null; // Clear the selected file
+  const dropArea = document.getElementById("dropArea");
+  dropArea.innerHTML = `
+      <label for="inputPDF" id="drop-area">
+          <input id="inputPDF" type="file" accept=".pdf" hidden />
+          <div id="pdf-view">
+              <p>Drag and Drop or Click here<br />to upload PDF</p>
+              <span class="bottom-text">Upload any PDF from desktop</span>
+          </div>
+      </label>
+  `;
+
+  // Reattach the event listener to the new input
+  const inputPDF = document.getElementById("inputPDF");
+  inputPDF.addEventListener("change", handleFiles);
+
+  // Hide the Remove PDF button
+  document.getElementById("removeButton").style.display = "none";
 }
