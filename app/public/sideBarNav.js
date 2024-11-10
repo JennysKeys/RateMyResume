@@ -155,13 +155,135 @@ window.onload = function () {
 
 window.addEventListener("scroll", handleInfiniteScroll);
 
-function changeToPostScreen() {
+
+const pdfDisplay = document.getElementById("pdfDisplay");
+const createPostPage = document.getElementById("createButton");
+const post = document.getElementById("postButtom");
+
+
+createPostPage.addEventListener("click", function () {
+  const mainContainer = document.getElementById("main");
+
   fetch("createPost.html")
     .then((response) => response.text())
-    .then((data) => {})
-    .catch((error) => console.error("Error loading create.html:", error));
+    .then((html) => {
+      mainContainer.innerHTML = html;
+      const inputPDF = document.getElementById("inputPDF");
+      const postButton = document.getElementById("postButton");
+
+      const removeButton = document.getElementById("removeButton");
+
+      inputPDF.addEventListener("change", handleFiles);
+      postButton.addEventListener("click", uploadPost);
+      removeButton.addEventListener("click", removePost);
+    });
+});
+
+let selectedFile = null; 
+
+function handleFiles(event) {
+  const files = event.target.files;
+  if (files.length > 0) {
+      selectedFile = files[0]; 
+      if (selectedFile.type === "application/pdf") {
+          const fileURL = URL.createObjectURL(selectedFile);
+          
+          const pdfDisplay = document.createElement("iframe");
+          pdfDisplay.src = fileURL;
+
+          const dropFileInputContainer = document.getElementById("dropArea");
+          dropFileInputContainer.innerHTML = ""; // Clear previous content
+          dropFileInputContainer.appendChild(pdfDisplay);
+
+          // Show the Remove PDF button
+          document.getElementById("removeButton").style.display = "inline-block";
+      } else {
+          alert("Please upload a valid PDF file.");
+      }
+  }
 }
 
-document
-  .getElementById("createButton")
-  .addEventListener("click", changeToPostScreen);
+async function uploadPost() {
+  const titleInput = document.getElementById("title");
+  const title = titleInput.value.trim();
+  const errorMessageDiv = document.getElementById("errorMessage");
+  const successMessageDiv = document.getElementById("successMessage");
+
+  // Clear previous messages
+  errorMessageDiv.textContent = "";
+  successMessageDiv.textContent = "";
+
+  if (!title) {
+      errorMessageDiv.textContent = "Please enter a title.";
+      return;
+  }
+
+  if (!selectedFile) {
+      errorMessageDiv.textContent = "Please upload a PDF file.";
+      return;
+  }
+
+  const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d"; 
+  const createdAt = new Date().toISOString(); 
+
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("pdf", selectedFile);
+  formData.append("created_at", createdAt);
+  formData.append("user_uuid", userUUID);
+
+  try {
+      const response = await fetch("/postss", {
+          method: "POST",
+          body: formData,
+      });
+
+      if (response.ok) {
+          titleInput.value = "";
+          selectedFile = null; 
+
+          // Reset the drop area
+          const dropArea = document.getElementById("dropArea");
+          dropArea.innerHTML = `
+              <label for="inputPDF" id="drop-area">
+                  <input id="inputPDF" type="file" accept=".pdf" hidden />
+                  <div id="pdf-view">
+                      <p>Drag and Drop or Click here<br />to upload PDF</p>
+                      <span class="bottom-text">Upload any PDF from desktop</span>
+                  </div>
+              </label>
+          `;
+
+          // Reattach the event listener to the new input
+          const inputPDF = document.getElementById("inputPDF");
+          inputPDF.addEventListener("change", handleFiles);
+
+          successMessageDiv.textContent = "Post uploaded successfully!";
+      } else {
+          errorMessageDiv.textContent = "Failed to upload post.";
+      }
+  } catch (error) {
+      errorMessageDiv.textContent = "An error occurred: " + error.message;
+  }
+}
+
+function removePost() {
+  selectedFile = null; // Clear the selected file
+  const dropArea = document.getElementById("dropArea");
+  dropArea.innerHTML = `
+      <label for="inputPDF" id="drop-area">
+          <input id="inputPDF" type="file" accept=".pdf" hidden />
+          <div id="pdf-view">
+              <p>Drag and Drop or Click here<br />to upload PDF</p>
+              <span class="bottom-text">Upload any PDF from desktop</span>
+          </div>
+      </label>
+  `;
+
+  // Reattach the event listener to the new input
+  const inputPDF = document.getElementById("inputPDF");
+  inputPDF.addEventListener("change", handleFiles);
+
+  // Hide the Remove PDF button
+  document.getElementById("removeButton").style.display = "none";
+}
