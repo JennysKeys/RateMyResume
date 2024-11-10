@@ -1,5 +1,3 @@
-// app.js
-
 let current_user = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
 let current_receiver = "";
 
@@ -16,14 +14,10 @@ async function getFollowers() {
         console.log("Received response headers");
 
         if (!response.ok) {
-            throw new Error(
-                "Network response was not ok " + response.statusText
-            );
+            throw new Error("Error: " + response.statusText);
         }
 
         const body = await response.json();
-        console.log("Received response body");
-        console.log(body);
 
         for (let i = 0; i < body.length; i++) {
             if (body[i].userid !== current_user) {
@@ -36,22 +30,18 @@ async function getFollowers() {
     return followers;
 }
 
-async function openForm() {
+async function openFollowersList() {
     document.getElementById("myForm").style.display = "block";
     await populateFollowersList();
 }
 
-function closeForm() {
+function closeFollowersList() {
     document.getElementById("myForm").style.display = "none";
-}
-
-function closePrivateMsg() {
-    document.getElementById("privateMsgForm").style.display = "none";
 }
 
 async function populateFollowersList() {
     const followersList = document.getElementById("followers-list");
-    followersList.innerHTML = "";
+    followersList.textContent = "";
     let followers = await getFollowers();
 
     if (followers.length === 0) {
@@ -82,9 +72,13 @@ async function populateFollowersList() {
 
 async function openPrivateMsg(senderID, receiverID) {
     document.getElementById("privateMsgForm").style.display = "block";
-    document.getElementById("message-container").innerHTML = "";
+    document.getElementById("message-container").textContent = "";
     current_receiver = receiverID;
     await loadMessages(senderID, receiverID);
+}
+
+function closePrivateMsg() {
+    document.getElementById("privateMsgForm").style.display = "none";
 }
 
 async function fetchMessages(senderID, receiverID) {
@@ -92,7 +86,6 @@ async function fetchMessages(senderID, receiverID) {
     url = `/get-messages?senderID=${senderID}&receiverID=${receiverID}`;
     try {
         const response = await fetch(url);
-        console.log("Received response headers");
 
         if (!response.ok) {
             throw new Error(
@@ -102,7 +95,6 @@ async function fetchMessages(senderID, receiverID) {
 
         const body = await response.json();
         messages = body;
-        console.log(body);
     } catch (error) {
         console.log("Fetch error:", error);
     }
@@ -111,7 +103,6 @@ async function fetchMessages(senderID, receiverID) {
 
 async function sendMessage(senderID, receiverID, content) {
     const url = "/send-message";
-    console.log(current_receiver, current_user);
     try {
         const response = await fetch(url, {
             method: "POST",
@@ -123,12 +114,9 @@ async function sendMessage(senderID, receiverID, content) {
             }),
         });
         if (!response.ok) {
-            throw new Error(
-                "Network response was not ok " + response.statusText
-            );
+            throw new Error("Error: " + response.statusText);
         }
         const result = await response.json();
-        console.log("Message sent:", result);
         await loadMessages(senderID, receiverID);
     } catch (error) {
         console.error("Fetch error:", error);
@@ -138,7 +126,6 @@ async function sendMessage(senderID, receiverID, content) {
 document
     .getElementById("send-message-form")
     .addEventListener("submit", async (event) => {
-        console.log("hewlo");
         event.preventDefault();
 
         let content = document.getElementById("message-content").value;
@@ -151,10 +138,9 @@ document
 
 async function loadMessages(senderID, receiverID) {
     const messageContainer = document.getElementById("message-container");
-    messageContainer.innerHTML = "";
+    messageContainer.textContent = "";
     const messages = await fetchMessages(senderID, receiverID);
 
-    console.log(idToUserName);
     messages.forEach((message) => {
         const div = document.createElement("div");
         div.textContent = `${idToUserName[message.sender_id]}: ${
