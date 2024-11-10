@@ -84,18 +84,6 @@
     </div>
 
     <script src="sideBarNav.js"></script>
-    <script>
-      document
-        .getElementById("createButton")
-        .addEventListener("click", function () {
-          const mainContainer = document.getElementById("main");
 
-          fetch("createPost.html")
-            .then((response) => response.text())
-            .then((html) => {
-              mainContainer.innerHTML = html;
-            });
-        });
-    </script>
   </body>
 </html>

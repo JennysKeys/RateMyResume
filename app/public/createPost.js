@@ -7,11 +7,12 @@ inputPDF.addEventListener("change", handleFiles);
 function handleFiles(event) {
   console.log("hi");
   const files = event.target.files;
+  console.log(files);
   if (files.length > 0) {
     const file = files[0];
     console.log(file);
     if (file.type === "application/pdf") {
-      message.textContent = `Uploaded: ${file.name}`;
+      // message.textContent = `Uploaded: ${file.name}`;
       const fileURL = URL.createObjectURL(file);
       console.log(fileURL);
     } else {

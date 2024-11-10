@@ -155,13 +155,52 @@ window.onload = function () {
 
 window.addEventListener("scroll", handleInfiniteScroll);
 
-function changeToPostScreen() {
+document.getElementById("createButton").addEventListener("click", function () {
+  console.log("hihih")
+  const mainContainer = document.getElementById("main");
+
   fetch("createPost.html")
     .then((response) => response.text())
-    .then((data) => {})
-    .catch((error) => console.error("Error loading create.html:", error));
+    .then((html) => {
+      console.log("hi")
+      mainContainer.innerHTML = html;
+      const inputPDF = document.getElementById("inputPDF");
+
+      inputPDF.addEventListener("change", handleFiles);
+    });
+});
+
+const pdfDisplay = document.getElementById("pdfDisplay");
+
+function handleFiles(event) {
+  const files = event.target.files;
+  if (files.length > 0) {
+    const file = files[0];
+    if (file.type === "application/pdf") {
+      const fileURL = URL.createObjectURL(file);
+      
+      // Create an iframe to display the PDF
+      const pdfDisplay = document.createElement("iframe");
+      pdfDisplay.src = fileURL;
+
+
+      // Get the drop file input container
+      const dropFileInputContainer = document.getElementById("dropArea");
+
+      // Remove existing children without using innerHTML
+      while (dropFileInputContainer.firstChild) {
+        dropFileInputContainer.removeChild(dropFileInputContainer.firstChild);
+      }
+
+      // Append the new PDF display
+      dropFileInputContainer.appendChild(pdfDisplay);
+    } else {
+      alert("Please upload a valid PDF file.");
+    }
+  }
 }
 
-document
-  .getElementById("createButton")
-  .addEventListener("click", changeToPostScreen);
+
+
+
+
