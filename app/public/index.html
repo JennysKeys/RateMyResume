@@ -1,101 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="css/style.css" />
-    <link rel="stylesheet" type="text/css" href="css/header.css" />
-    <link rel="stylesheet" type="text/css" href="css/sideNav.css" />
-    <link rel="stylesheet" type="text/css" href="css/main.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
-    <title>Rate My Resume</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+        <link rel="stylesheet" type="text/css" href="css/header.css" />
+        <link rel="stylesheet" type="text/css" href="css/sideNav.css" />
+        <link rel="stylesheet" type="text/css" href="css/main.css" />
+        <link rel="stylesheet" type="text/css" href="css/chat.css" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        />
+        <title>Rate My Resume</title>
 
-    <style></style>
-  </head>
-  <body>
-    <div class="header">
-      <div class="left-section">
-        <a href="index.html" class="header-link">
-          <img class="logo" src="icons/logo.png" />
-          <div>RateMyResume</div>
-        </a>
-      </div>
+        <style></style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="left-section">
+                <a href="index.html" class="header-link">
+                    <img class="logo" src="icons/logo.png" />
+                    <div>RateMyResume</div>
+                </a>
+            </div>
 
-      <div class="middle-section">
-        <input class="search-bar" type="text" placeholder="Search RMR" />
-        <button class="search-button">
-          <img class="search-icon" src="icons/search.svg" alt="Search Icon" />
-        </button>
-      </div>
+            <div class="middle-section">
+                <input
+                    class="search-bar"
+                    type="text"
+                    placeholder="Search RMR"
+                />
+                <button class="search-button">
+                    <img
+                        class="search-icon"
+                        src="icons/search.svg"
+                        alt="Search Icon"
+                    />
+                </button>
+            </div>
 
-      <div class="right-section">
-        <button type="button" class="btn">
-          <i class="fa-solid fa-message">‌</i>
-        </button>
-        <div
-          id="createButton"
-          class="create-post"
-          data-tooltip="Create post"
-          style="color: rgb(62, 62, 62)"
-        >
-          + Create
+            <div class="right-section">
+                <button type="button" class="btn">
+                    <i class="fa-solid fa-message">‌</i>
+                </button>
+                <div
+                    id="createButton"
+                    class="create-post"
+                    data-tooltip="Create post"
+                    style="color: rgb(62, 62, 62)"
+                >
+                    + Create
+                </div>
+                <a href="login.html">
+                    <div class="profile-container" data-tooltip="Open Profile">
+                        <img
+                            class="profile"
+                            src="icons/profile.jpeg"
+                            alt="User Profile"
+                        />
+                    </div>
+                </a>
+            </div>
         </div>
-        <a href="login.html">
-          <div class="profile-container" data-tooltip="Open Profile">
-            <img class="profile" src="icons/profile.jpeg" alt="User Profile" />
-          </div>
-        </a>
-      </div>
-    </div>
 
-    <div id="mySidenav" class="sidenav">
-      <div>
-        <a href="#">Home</a>
-      </div>
-      <div><a href="#">Popular</a></div>
-      <div><a href="#">Followers</a></div>
-      <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
+        <div id="mySidenav" class="sidenav">
+            <div>
+                <a href="#">Home</a>
+            </div>
+            <div><a href="#">Popular</a></div>
+            <div><a href="#">Followers</a></div>
+            <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
 
-      <div>FILTER SECTION TO BE ADDED</div>
+            <div>FILTER SECTION TO BE ADDED</div>
 
-      <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
-      <div>
-        <a href="#">About</a>
-      </div>
-      <div><a href="#">Help</a></div>
-      <div><a href="#">Content Policy</a></div>
-      <div><a href="#">Privacy Policy</a></div>
-      <div><a href="#">User Agreement</a></div>
-    </div>
+            <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
+            <div>
+                <a href="#">About</a>
+            </div>
+            <div><a href="#">Help</a></div>
+            <div><a href="#">Content Policy</a></div>
+            <div><a href="#">Privacy Policy</a></div>
+            <div><a href="#">User Agreement</a></div>
+        </div>
 
-    <div id="main" class="main-content">
-      <div id="card-container"></div>
-      <div id="loader">
-        <div class="skeleton-card"></div>
-      </div>
-      <div class="card-actions"></div>
-    </div>
+        <div id="main" class="main-content">
+            <div id="card-container"></div>
+            <div id="loader">
+                <div class="skeleton-card"></div>
+            </div>
+            <div class="card-actions"></div>
+        </div>
 
-    <script src="sideBarNav.js"></script>
-    <script>
-      document
-        .getElementById("createButton")
-        .addEventListener("click", function () {
-          const mainContainer = document.getElementById("main");
+        <button class="open-button" onclick="openForm()">Followers List</button>
 
-          fetch("createPost.html")
-            .then((response) => response.text())
-            .then((html) => {
-              mainContainer.innerHTML = html;
-            });
-        });
-    </script>
-  </body>
+        <!-- Followers List Popup -->
+        <div class="chat-popup" id="myForm">
+            <div class="form-container">
+                <h2>Followers List</h2>
+                <span class="close-button" onclick="closeForm()">&times;</span>
+                <ul id="followers-list" class="scroll-container">
+                    <!-- Friends will be populated here -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Private Messaging Window -->
+        <div class="private-msg-popup" id="privateMsgForm">
+            <div class="private-msg-container">
+                <h2>Private Messaging</h2>
+                <span class="close-button" onclick="closePrivateMsg()"
+                    >&times;</span
+                >
+                <div id="message-container" class="scroll-container">
+                    <!-- Messages will be populated here -->
+                </div>
+                <form id="send-message-form" class="send-message-form">
+                    <input
+                        type="text"
+                        id="message-content"
+                        class="send-message-input"
+                        placeholder="Type your message here..."
+                        required
+                    />
+                    <button
+                        id="send-message-button"
+                        class="send-message-button"
+                        type="submit"
+                    >
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <script src="sideBarNav.js"></script>
+        <script src="privateMessage.js"></script>
+        <script>
+            document
+                .getElementById("createButton")
+                .addEventListener("click", function () {
+                    const mainContainer = document.getElementById("main");
+
+                    fetch("createPost.html")
+                        .then((response) => response.text())
+                        .then((html) => {
+                            mainContainer.innerHTML = html;
+                        });
+                });
+        </script>
+    </body>
 </html>
