@@ -1,0 +1,104 @@
+.open-button {
+    padding: 10px 20px;
+    background-color: #a3d558;
+    color: white;
+    border: none;
+    cursor: pointer;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    border-radius: 5px;
+}
+
+.open-button:hover {
+    background-color: #0056b3;
+}
+
+.chat-popup,
+.private-msg-popup {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    right: 15px;
+    border: 3px solid #f1f1f1;
+    z-index: 9;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    height: 60vh; /* Set height to 60% of viewport height */
+    transform: translateY(-15px); /* Move up by 15 pixels */
+}
+
+.form-container {
+    height: 100%;
+    overflow: hidden; /* Disable scrolling here */
+}
+
+.scroll-container {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    height: calc(60vh - 60px); /* Set height to fit within the popup */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.scroll-container li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.scroll-container li:last-child {
+    border-bottom: none;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    color: #000;
+}
+
+.open-private-msg {
+    background-color: #a3d558;
+    color: white;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    right: 20px;
+    transform: translateY(5px);
+    border-radius: 5px;
+    margin-left: 5px;
+}
+
+/* Styles for the send message button */
+.send-message-button {
+    background-color: #a3d558;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+    font-size: 16px;
+    transform: translate(230px, -74px);
+}
+
+.send-message-button:hover {
+    background-color: #6da21e;
+}
+
+/* Styles for the message input */
+.send-message-input {
+    width: 75%;
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-right: 5px;
+    transform: translate(-15px, -35px);
+}
