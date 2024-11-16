@@ -1,8 +1,41 @@
 let current_user = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
 let current_receiver = "";
+const messageContainer = document.getElementById("message-container");
 
 let idToUserName = {
     "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d": "Test User",
+};
+
+const ws = new WebSocket(
+    "ws://localhost:3001/?userID=" + encodeURIComponent(current_user)
+);
+
+ws.onopen = (event) => {
+    console.log("Connected to WS");
+};
+
+ws.onmessage = (event) => {
+    console.log("hi");
+    let msgData = JSON.parse(event.data);
+    console.log(msgData);
+    console.log(current_user, msgData.receiverID);
+    console.log(current_receiver, msgData.sender_id);
+
+    if (
+        msgData.receiver_id === current_user &&
+        msgData.sender_id === current_receiver
+    ) {
+        console.log("ion here");
+        let div = document.createElement("div");
+        div.textContent = `${idToUserName[msgData.sender_id]}: ${
+            msgData.content
+        }`;
+        messageContainer.appendChild(div);
+    }
+};
+
+ws.onclose = (event) => {
+    console.log("Disconnected from WebSocket server");
 };
 
 async function getFollowers() {
@@ -137,7 +170,6 @@ document
     });
 
 async function loadMessages(senderID, receiverID) {
-    const messageContainer = document.getElementById("message-container");
     messageContainer.textContent = "";
     const messages = await fetchMessages(senderID, receiverID);
 
