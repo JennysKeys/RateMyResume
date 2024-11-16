@@ -54,11 +54,33 @@ const limit = 2; //Number of posts to load per batch
 
 async function loadPosts() {
   try {
+const params = new URLSearchParams({
+      limit: limit,
+      offset: offset,
+    });
+    if (currentSearchTerm) {
+      params.append("search", currentSearchTerm);
+    }
     const response = await fetch(
-      `http://localhost:3000/posts?limit=${limit}&offset=${offset}`
+      `http://localhost:3000/posts?${params.toString()}`
     );
     const posts = await response.json();
+    if (offset === 0) {
+      cardContainer.innerHTML = "";
+    }
     offset += limit;
+
+    if (posts.length === 0) {
+      // If no posts are returned and it's the first batch, display a message
+      if (offset === limit) {
+        const noResultsMessage = document.createElement("p");
+        noResultsMessage.textContent = "No posts found.";
+        noResultsMessage.style.marginLeft = "370px";
+        cardContainer.appendChild(noResultsMessage);
+      }
+      removeInfiniteScroll();
+      return;
+    }
 
     posts.forEach((post, index) => {
       console.log(post.pdf);
