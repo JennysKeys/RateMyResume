@@ -31,6 +31,7 @@ ws.onmessage = (event) => {
             msgData.content
         }`;
         messageContainer.appendChild(div);
+        scrollToBottom();
     }
 };
 
@@ -179,5 +180,10 @@ async function loadMessages(senderID, receiverID) {
             message.content
         }`;
         messageContainer.appendChild(div);
+        scrollToBottom();
     });
+}
+
+function scrollToBottom() {
+    messageContainer.scrollTop = messageContainer.scrollHeight;
 }
