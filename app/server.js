@@ -22,9 +22,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(passport.initialize());
 
-/* YOUR CODE HERE */
-
 const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
+const { startWebSocketServer, broadcastMessage } = require("./websocket");
 
 const pool = new Pool({
   host: PGHOST,
@@ -78,7 +77,9 @@ app.post("/send-message", async (req, res) => {
             "INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1, $2, $3) RETURNING *",
             [senderID, receiverID, content]
         );
-        res.json(result.rows[0]);
+        let message = result.rows[0];
+        broadcastMessage(message);
+        res.json(message);
     } catch (err) {
         console.error("Error sending message:", err);
         res.status(500).json({ message: "Internal server error" });
@@ -292,4 +293,5 @@ app.post("/login", (req, res, next) => {
 
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
+    startWebSocketServer();
 });
