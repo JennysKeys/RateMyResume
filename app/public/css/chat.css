@@ -52,6 +52,23 @@
     border-bottom: none;
 }
 
+.scroll-container-msg {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    height: calc(55vh - 55px); /* Set height to fit within the popup */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.scroll-container-msg li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.scroll-container-msg li:last-child {
+    border-bottom: none;
+}
+
 .close-button {
     position: absolute;
     top: 10px;
@@ -84,7 +101,7 @@
     border-radius: 5px;
     margin-left: 10px;
     font-size: 16px;
-    transform: translate(230px, -74px);
+    transform: translate(230px, -39px);
 }
 
 .send-message-button:hover {
@@ -100,5 +117,5 @@
     border-radius: 5px;
     font-size: 16px;
     margin-right: 5px;
-    transform: translate(-15px, -35px);
+    transform: translate(-15px, 0px);
 }
