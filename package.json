@@ -8,7 +8,8 @@
         "multer": "^1.4.5-lts.1",
         "passport": "^0.7.0",
         "passport-local": "^1.0.0",
-        "pg": "^8.13.1"
+        "pg": "^8.13.1",
+        "ws": "^8.18.0"
     },
     "scripts": {
         "start": "cd app && node server.js"
