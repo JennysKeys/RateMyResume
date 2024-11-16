@@ -128,7 +128,11 @@ async function loadPosts() {
 
       // Create buttons container
       const buttonsContainer = document.createElement("div");
-      buttonsContainer.className = "buttonsContainer"; 
+      // buttonsContainer.style.borderTop = "2px solid #ccc"; // Add border above buttons
+      // buttonsContainer.style.paddingTop = "10px"; // Add some padding
+      buttonsContainer.className = "buttonsContainer"; // Use a class for styling
+
+      
 
       let buttonUp = createCardBtn(
         "fas fa-arrow-up",
@@ -237,26 +241,26 @@ let selectedFile = null;
 function handleFiles(event) {
   const files = event.target.files;
   if (files.length > 0) {
-      const selectedFile = files[0]; 
-      if (selectedFile.type === "application/pdf") {
-          console.log("PDF uploaded:", selectedFile.name); // Log the uploaded file
-          const fileURL = URL.createObjectURL(selectedFile);
-          
-          const pdfDisplay = document.createElement("iframe");
-          pdfDisplay.src = fileURL;
+    selectedFile = files[0];
+    if (selectedFile.type === "application/pdf") {
+      const fileURL = URL.createObjectURL(selectedFile);
 
+      const pdfDisplay = document.createElement("iframe");
+      pdfDisplay.src = fileURL;
 
-          const dropFileInputContainer = document.getElementById("dropArea");
-          dropFileInputContainer.innerHTML = ""; 
-          dropFileInputContainer.appendChild(pdfDisplay);
+      const dropFileInputContainer = document.getElementById("dropArea");
+      dropFileInputContainer.innerHTML = ""; // Clear previous content
+      dropFileInputContainer.appendChild(pdfDisplay);
 
-          // document.getElementById("close-button").hidden = false; 
-          document.getElementById("removeButton").style.display = "inline-block";
-      } else {
-          alert("Please upload a valid PDF file.");
-      }
+      // Show the Remove PDF button
+      document.getElementById("removeButton").style.display = "inline-block";
+    } else {
+      alert("Please upload a valid PDF file.");
+    }
   }
 }
+
+
 
 
 
