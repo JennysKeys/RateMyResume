@@ -1,4 +1,9 @@
 let cardNum = 0;
+// Get references to the search input and button
+const searchInput = document.getElementById("searchInput");
+const searchButton = document.getElementById("searchButton");
+// Variable to store the current search term
+let currentSearchTerm = "";
 
 function openNav() {
   document.getElementById("mySidenav").style.width = "250px";
@@ -47,13 +52,59 @@ let createCardBtn = (icon, bottom, left, id, onClick) => {
 let offset = 0;
 const limit = 2; //Number of posts to load per batch
 
+function timeSince(date) {
+  const now = new Date();
+  const postDate = new Date(date);
+  const secondsPast = Math.floor((now - postDate) / 1000);
+
+  if (secondsPast < 60) {
+    return `${secondsPast} sec${secondsPast !== 1 ? "s" : ""} ago`;
+  }
+  if (secondsPast < 3600) {
+    const minutes = Math.floor(secondsPast / 60);
+    return `${minutes} min${minutes !== 1 ? "s" : ""} ago`;
+  }
+  if (secondsPast < 86400) {
+    const hours = Math.floor(secondsPast / 3600);
+    return `${hours} hr${hours !== 1 ? "s" : ""} ago`;
+  }
+  if (secondsPast < 2592000) {
+    // 30 days
+    const days = Math.floor(secondsPast / 86400);
+    return `${days} day${days !== 1 ? "s" : ""} ago`;
+  }
+  return `30+ days ago`;
+}
+
 async function loadPosts() {
   try {
+    const params = new URLSearchParams({
+      limit: limit,
+      offset: offset,
+    });
+    if (currentSearchTerm) {
+      params.append("search", currentSearchTerm);
+    }
     const response = await fetch(
-      `http://localhost:3000/posts?limit=${limit}&offset=${offset}`
+      `http://localhost:3000/posts?${params.toString()}`
     );
     const posts = await response.json();
+    if (offset === 0) {
+      cardContainer.innerHTML = "";
+    }
     offset += limit;
+
+    if (posts.length === 0) {
+      // If no posts are returned and it's the first batch, display a message
+      if (offset === limit) {
+        const noResultsMessage = document.createElement("p");
+        noResultsMessage.textContent = "No posts found.";
+        noResultsMessage.style.marginLeft = "370px";
+        cardContainer.appendChild(noResultsMessage);
+      }
+      removeInfiniteScroll();
+      return;
+    }
 
     posts.forEach((post, index) => {
       const card = document.createElement("div");
@@ -64,7 +115,7 @@ async function loadPosts() {
       const usernameElement = document.createElement("h3");
       usernameElement.textContent = post.username;
       const dateElement = document.createElement("p");
-      dateElement.textContent = post.created_at;
+      dateElement.textContent = timeSince(post.created_at);
 
       headerContainer.appendChild(usernameElement);
       headerContainer.appendChild(dateElement);
@@ -136,7 +187,8 @@ async function loadPosts() {
 let handleInfiniteScroll = () => {
   throttle(() => {
     let endOfPage =
-      window.innerHeight + window.pageYOffset >= document.body.offsetHeight;
+      window.innerHeight + window.pageYOffset >=
+      document.body.offsetHeight - 30;
 
     if (endOfPage) {
       loadPosts();
@@ -155,11 +207,24 @@ window.onload = function () {
 
 window.addEventListener("scroll", handleInfiniteScroll);
 
+searchButton.addEventListener("click", () => {
+  currentSearchTerm = searchInput.value.trim();
+
+  // Reset offset and clear existing posts
+  offset = 0;
+  cardContainer.innerHTML = "";
+
+  // Re-add the infinite scroll event listener if it was removed
+  window.removeEventListener("scroll", handleInfiniteScroll);
+  window.addEventListener("scroll", handleInfiniteScroll);
+
+  // Load posts with the new search term
+  loadPosts();
+});
 
 const pdfDisplay = document.getElementById("pdfDisplay");
 const createPostPage = document.getElementById("createButton");
 const post = document.getElementById("postButtom");
-
 
 createPostPage.addEventListener("click", function () {
   const mainContainer = document.getElementById("main");
@@ -179,27 +244,27 @@ createPostPage.addEventListener("click", function () {
     });
 });
 
-let selectedFile = null; 
+let selectedFile = null;
 
 function handleFiles(event) {
   const files = event.target.files;
   if (files.length > 0) {
-      selectedFile = files[0]; 
-      if (selectedFile.type === "application/pdf") {
-          const fileURL = URL.createObjectURL(selectedFile);
-          
-          const pdfDisplay = document.createElement("iframe");
-          pdfDisplay.src = fileURL;
+    selectedFile = files[0];
+    if (selectedFile.type === "application/pdf") {
+      const fileURL = URL.createObjectURL(selectedFile);
 
-          const dropFileInputContainer = document.getElementById("dropArea");
-          dropFileInputContainer.innerHTML = ""; // Clear previous content
-          dropFileInputContainer.appendChild(pdfDisplay);
+      const pdfDisplay = document.createElement("iframe");
+      pdfDisplay.src = fileURL;
 
-          // Show the Remove PDF button
-          document.getElementById("removeButton").style.display = "inline-block";
-      } else {
-          alert("Please upload a valid PDF file.");
-      }
+      const dropFileInputContainer = document.getElementById("dropArea");
+      dropFileInputContainer.innerHTML = ""; // Clear previous content
+      dropFileInputContainer.appendChild(pdfDisplay);
+
+      // Show the Remove PDF button
+      document.getElementById("removeButton").style.display = "inline-block";
+    } else {
+      alert("Please upload a valid PDF file.");
+    }
   }
 }
 
@@ -214,17 +279,17 @@ async function uploadPost() {
   successMessageDiv.textContent = "";
 
   if (!title) {
-      errorMessageDiv.textContent = "Please enter a title.";
-      return;
+    errorMessageDiv.textContent = "Please enter a title.";
+    return;
   }
 
   if (!selectedFile) {
-      errorMessageDiv.textContent = "Please upload a PDF file.";
-      return;
+    errorMessageDiv.textContent = "Please upload a PDF file.";
+    return;
   }
 
-  const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d"; 
-  const createdAt = new Date().toISOString(); 
+  const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
+  const createdAt = new Date().toISOString();
 
   const formData = new FormData();
   formData.append("title", title);
@@ -233,18 +298,18 @@ async function uploadPost() {
   formData.append("user_uuid", userUUID);
 
   try {
-      const response = await fetch("/postss", {
-          method: "POST",
-          body: formData,
-      });
+    const response = await fetch("/postss", {
+      method: "POST",
+      body: formData,
+    });
 
-      if (response.ok) {
-          titleInput.value = "";
-          selectedFile = null; 
+    if (response.ok) {
+      titleInput.value = "";
+      selectedFile = null;
 
-          // Reset the drop area
-          const dropArea = document.getElementById("dropArea");
-          dropArea.innerHTML = `
+      // Reset the drop area
+      const dropArea = document.getElementById("dropArea");
+      dropArea.innerHTML = `
               <label for="inputPDF" id="drop-area">
                   <input id="inputPDF" type="file" accept=".pdf" hidden />
                   <div id="pdf-view">
@@ -254,16 +319,16 @@ async function uploadPost() {
               </label>
           `;
 
-          // Reattach the event listener to the new input
-          const inputPDF = document.getElementById("inputPDF");
-          inputPDF.addEventListener("change", handleFiles);
+      // Reattach the event listener to the new input
+      const inputPDF = document.getElementById("inputPDF");
+      inputPDF.addEventListener("change", handleFiles);
 
-          successMessageDiv.textContent = "Post uploaded successfully!";
-      } else {
-          errorMessageDiv.textContent = "Failed to upload post.";
-      }
+      successMessageDiv.textContent = "Post uploaded successfully!";
+    } else {
+      errorMessageDiv.textContent = "Failed to upload post.";
+    }
   } catch (error) {
-      errorMessageDiv.textContent = "An error occurred: " + error.message;
+    errorMessageDiv.textContent = "An error occurred: " + error.message;
   }
 }
 
