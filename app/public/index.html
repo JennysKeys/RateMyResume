@@ -1,184 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" type="text/css" href="css/style.css" />
-        <link rel="stylesheet" type="text/css" href="css/header.css" />
-        <link rel="stylesheet" type="text/css" href="css/sideNav.css" />
-        <link rel="stylesheet" type="text/css" href="css/main.css" />
-        <link rel="stylesheet" type="text/css" href="css/chat.css" />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap"
-            rel="stylesheet"
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <link rel="stylesheet" type="text/css" href="css/header.css" />
+    <link rel="stylesheet" type="text/css" href="css/sideNav.css" />
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <link rel="stylesheet" type="text/css" href="css/chat.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <title>Rate My Resume</title>
+
+    <style></style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="left-section">
+        <a href="index.html" class="header-link">
+          <img class="logo" src="icons/logo.png" />
+          <div>RateMyResume</div>
+        </a>
+      </div>
+
+      <div class="middle-section">
+        <input
+          id="searchInput"
+          class="search-bar"
+          type="text"
+          placeholder="Search RMR"
         />
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-        />
-
-        <title>Rate My Resume</title>
-
-        <style></style>
-    </head>
-    <body>
-        <div class="header">
-            <div class="left-section">
-                <a href="index.html" class="header-link">
-                    <img class="logo" src="icons/logo.png" />
-                    <div>RateMyResume</div>
-                </a>
-            </div>
-
-            <div class="middle-section">
-                <input
-                    class="search-bar"
-                    type="text"
-                    placeholder="Search RMR"
-                />
-                <button class="search-button">
-                    <img
-                        class="search-icon"
-                        src="icons/search.svg"
-                        alt="Search Icon"
-                    />
-                </button>
-            </div>
-
-            <div class="right-section">
-                <button type="button" class="btn">
-                    <i class="fa-solid fa-message">‌</i>
-                </button>
-                <div
-                    id="createButton"
-                    class="create-post"
-                    data-tooltip="Create post"
-                    style="color: rgb(62, 62, 62)"
-                >
-                    + Create
-                </div>
-                <a href="login.html">
-                    <div class="profile-container" data-tooltip="Open Profile">
-                        <img
-                            class="profile"
-                            src="icons/profile.jpeg"
-                            alt="User Profile"
-                        />
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <div id="mySidenav" class="sidenav">
-            <div>
-                <a href="#">Home</a>
-            </div>
-            <div><a href="#">Popular</a></div>
-            <div><a href="#">Followers</a></div>
-            <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
-
-            <div>
-                <b>FILTER SECTION</b>
-
-                <form id="form">
-                    School <br />
-                    <input id="school" type="checkbox" value="Drexel" />
-                    Drexel<br />
-                    <input id="school" type="checkbox" value="UPenn" />
-                    UPenn<br />
-                    <input id="school" type="checkbox" value="Temple" />
-                    Temple<br />
-                    GPA<br />
-                    <input id="gpa" type="checkbox" value="&#60; 2.4" /> &#60;
-                    2.4<br />
-                    <input id="gpa" type="checkbox" value="2.5 - 3.0" /> 2.5 -
-                    3.0<br />
-                    <input id="gpa" type="checkbox" value="3.1-3.5" />
-                    3.1-3.5<br />
-                    <input id="gpa" type="checkbox" value="3.5-3.8" />
-                    3.5-3.8<br />
-                    <input id="gpa" type="checkbox" value="3.8	&#60;" /> 3.8
-                    &#60;<br />
-                    Major<br />
-                    <input
-                        id="major"
-                        type="checkbox"
-                        value="Computer Science"
-                    />
-                    Computer Science<br />
-                    <input id="major" type="checkbox" value="Data Science" />
-                    Data Science<br />
-                    <input
-                        id="major"
-                        type="checkbox"
-                        value="Mechanical Engineering"
-                    />
-                    Mechanical Engineering<br />
-                    <input id="major" type="checkbox" value="Nursing" />
-                    Nursing<br />
-                    <input type="submit" value="Submit" />
-                </form>
-            </div>
-
-            <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
-            <div>
-                <a href="#">About</a>
-            </div>
-            <div><a href="#">Help</a></div>
-            <div><a href="#">Content Policy</a></div>
-            <div><a href="#">Privacy Policy</a></div>
-            <div><a href="#">User Agreement</a></div>
-        </div>
-
-        <div id="main" class="main-content">
-            <div id="card-container"></div>
-            <div id="loader">
-                <div class="skeleton-card"></div>
-            </div>
-            <div class="card-actions"></div>
-        </div>
-
-        <button class="open-button" onclick="openFollowersList()">
-            Followers List
+        <button id="searchButton" class="search-button">
+          <img class="search-icon" src="icons/search.svg" alt="Search Icon" />
         </button>
+      </div>
 
-        <div class="chat-popup" id="myForm">
-            <div class="form-container">
-                <h2>Followers List</h2>
-                <span class="close-button" onclick="closeFollowersList()"
-                    >&times;</span
-                >
-                <ul id="followers-list" class="scroll-container"></ul>
-            </div>
+      <div class="right-section">
+        <button type="button" class="btn">
+          <i class="fa-solid fa-message">‌</i>
+        </button>
+        <div
+          id="createButton"
+          class="create-post"
+          data-tooltip="Create post"
+          style="color: rgb(62, 62, 62)"
+        >
+          + Create
         </div>
+        <a href="login.html">
+          <div class="profile-container" data-tooltip="Open Profile">
+            <img class="profile" src="icons/profile.jpeg" alt="User Profile" />
+          </div>
+        </a>
+      </div>
+    </div>
 
-        <div class="private-msg-popup" id="privateMsgForm">
-            <div class="private-msg-container">
-                <h2>Private Messaging</h2>
-                <span class="close-button" onclick="closePrivateMsg()"
-                    >&times;</span
-                >
-                <div id="message-container" class="scroll-container-msg"></div>
-                <form id="send-message-form" class="send-message-form">
-                    <input
-                        type="text"
-                        id="message-content"
-                        class="send-message-input"
-                        placeholder="Type your message here..."
-                        required
-                    />
-                    <button
-                        id="send-message-button"
-                        class="send-message-button"
-                        type="submit"
-                    >
-                        Send
-                    </button>
-                </form>
-            </div>
-        </div>
-        <script src="sideBarNav.js"></script>
-        <script src="filter.js"></script>
-        <script src="privateMessage.js"></script>
-    </body>
+    <div id="mySidenav" class="sidenav">
+      <div>
+        <a href="#">Home</a>
+      </div>
+      <div><a href="#">Popular</a></div>
+      <div><a href="#">Followers</a></div>
+      <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
+
+      <div>
+        <b>FILTER SECTION</b>
+
+        <form id="form">
+          School <br />
+          <input id="school" type="checkbox" value="Drexel" />
+          Drexel<br />
+          <input id="school" type="checkbox" value="UPenn" />
+          UPenn<br />
+          <input id="school" type="checkbox" value="Temple" />
+          Temple<br />
+          GPA<br />
+          <input id="gpa" type="checkbox" value="&#60; 2.4" /> &#60; 2.4<br />
+          <input id="gpa" type="checkbox" value="2.5 - 3.0" /> 2.5 - 3.0<br />
+          <input id="gpa" type="checkbox" value="3.1-3.5" />
+          3.1-3.5<br />
+          <input id="gpa" type="checkbox" value="3.5-3.8" />
+          3.5-3.8<br />
+          <input id="gpa" type="checkbox" value="3.8	&#60;" /> 3.8 &#60;<br />
+          Major<br />
+          <input id="major" type="checkbox" value="Computer Science" />
+          Computer Science<br />
+          <input id="major" type="checkbox" value="Data Science" />
+          Data Science<br />
+          <input id="major" type="checkbox" value="Mechanical Engineering" />
+          Mechanical Engineering<br />
+          <input id="major" type="checkbox" value="Nursing" />
+          Nursing<br />
+          <input type="submit" value="Submit" />
+        </form>
+      </div>
+
+      <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
+      <div>
+        <a href="#">About</a>
+      </div>
+      <div><a href="#">Help</a></div>
+      <div><a href="#">Content Policy</a></div>
+      <div><a href="#">Privacy Policy</a></div>
+      <div><a href="#">User Agreement</a></div>
+    </div>
+
+    <div id="main" class="main-content">
+      <div id="card-container"></div>
+      <div id="loader">
+        <div class="skeleton-card"></div>
+      </div>
+      <div class="card-actions"></div>
+    </div>
+
+    <button class="open-button" onclick="openFollowersList()">
+      Followers List
+    </button>
+
+    <div class="chat-popup" id="myForm">
+      <div class="form-container">
+        <h2>Followers List</h2>
+        <span class="close-button" onclick="closeFollowersList()">&times;</span>
+        <ul id="followers-list" class="scroll-container"></ul>
+      </div>
+    </div>
+
+    <div class="private-msg-popup" id="privateMsgForm">
+      <div class="private-msg-container">
+        <h2>Private Messaging</h2>
+        <span class="close-button" onclick="closePrivateMsg()">&times;</span>
+        <div id="message-container" class="scroll-container"></div>
+        <form id="send-message-form" class="send-message-form">
+          <input
+            type="text"
+            id="message-content"
+            class="send-message-input"
+            placeholder="Type your message here..."
+            required
+          />
+          <button
+            id="send-message-button"
+            class="send-message-button"
+            type="submit"
+          >
+            Send
+          </button>
+        </form>
+      </div>
+    </div>
+    <script src="sideBarNav.js"></script>
+    <script src="filter.js"></script>
+    <script src="privateMessage.js"></script>
+  </body>
 </html>
