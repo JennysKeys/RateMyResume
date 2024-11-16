@@ -19,15 +19,17 @@
             />
         </div>
 
-        <div class="drop-file-input-container" id="dropArea">
-            <label for="inputPDF" id="drop-area">
-                <input id="inputPDF" type="file" accept=".pdf" hidden />
-                <div id="pdf-view">
-                    <p>Drag and Drop or Click here<br />to upload PDF</p>
-                    <span class="bottom-text">Upload any PDF from desktop</span>
-                </div>
-            </label>
-        </div>
+    <div class="drop-file-input-container" id="dropArea">
+        <label for="inputPDF" id="drop-area">
+            <input id="inputPDF" type="file" accept=".pdf" hidden />
+            <div id="pdf-view">
+                <p>Drag and Drop or Click here<br />to upload PDF</p>
+                <span class="bottom-text">Upload any PDF from desktop</span>
+            </div>
+        </label>
+        <span id="close-button" class="close-button" onclick="closePrivateMsg()" hidden>×</span>
+    </div>
+
         
         <div id="errorMessage" style="color: red;"></div>
         <div id="successMessage" style="color: green;"></div>
@@ -35,7 +37,6 @@
         <div class="upload-container">
             <button id="postButton">Post</button>
             <button id="removeButton" style="display: none;">Remove PDF</button>
-
         </div>
     </div>
     <script src="createPost.js"></script>

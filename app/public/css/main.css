@@ -118,6 +118,14 @@
   animation: load 1s infinite;
 }
 
+
+.buttonsContainer {
+  display: flex;
+  justify-content: space-between; /* Adjusts spacing between buttons */
+  border-top: 2px solid #ccc; 
+  padding-top: 10px; 
+}
+
 @keyframes load {
   100% {
     transform: translateX(100%);

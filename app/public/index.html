@@ -16,6 +16,7 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
         />
+
         <title>Rate My Resume</title>
 
         <style></style>
@@ -76,7 +77,48 @@
             <div><a href="#">Followers</a></div>
             <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
 
-            <div>FILTER SECTION TO BE ADDED</div>
+            <div>
+                <b>FILTER SECTION</b>
+
+                <form id="form">
+                    School <br />
+                    <input id="school" type="checkbox" value="Drexel" />
+                    Drexel<br />
+                    <input id="school" type="checkbox" value="UPenn" />
+                    UPenn<br />
+                    <input id="school" type="checkbox" value="Temple" />
+                    Temple<br />
+                    GPA<br />
+                    <input id="gpa" type="checkbox" value="&#60; 2.4" /> &#60;
+                    2.4<br />
+                    <input id="gpa" type="checkbox" value="2.5 - 3.0" /> 2.5 -
+                    3.0<br />
+                    <input id="gpa" type="checkbox" value="3.1-3.5" />
+                    3.1-3.5<br />
+                    <input id="gpa" type="checkbox" value="3.5-3.8" />
+                    3.5-3.8<br />
+                    <input id="gpa" type="checkbox" value="3.8	&#60;" /> 3.8
+                    &#60;<br />
+                    Major<br />
+                    <input
+                        id="major"
+                        type="checkbox"
+                        value="Computer Science"
+                    />
+                    Computer Science<br />
+                    <input id="major" type="checkbox" value="Data Science" />
+                    Data Science<br />
+                    <input
+                        id="major"
+                        type="checkbox"
+                        value="Mechanical Engineering"
+                    />
+                    Mechanical Engineering<br />
+                    <input id="major" type="checkbox" value="Nursing" />
+                    Nursing<br />
+                    <input type="submit" value="Submit" />
+                </form>
+            </div>
 
             <div style="margin-left: 10px; margin-right: 10px"><hr /></div>
             <div>
@@ -98,27 +140,21 @@
 
         <button class="open-button" onclick="openForm()">Followers List</button>
 
-        <!-- Followers List Popup -->
         <div class="chat-popup" id="myForm">
             <div class="form-container">
                 <h2>Followers List</h2>
                 <span class="close-button" onclick="closeForm()">&times;</span>
-                <ul id="followers-list" class="scroll-container">
-                    <!-- Friends will be populated here -->
-                </ul>
+                <ul id="followers-list" class="scroll-container"></ul>
             </div>
         </div>
 
-        <!-- Private Messaging Window -->
         <div class="private-msg-popup" id="privateMsgForm">
             <div class="private-msg-container">
                 <h2>Private Messaging</h2>
                 <span class="close-button" onclick="closePrivateMsg()"
                     >&times;</span
                 >
-                <div id="message-container" class="scroll-container">
-                    <!-- Messages will be populated here -->
-                </div>
+                <div id="message-container" class="scroll-container"></div>
                 <form id="send-message-form" class="send-message-form">
                     <input
                         type="text"
@@ -137,6 +173,10 @@
                 </form>
             </div>
         </div>
-    <script src="sideBarNav.js"></script>
-  </body>
+        <script src="sideBarNav.js"></script>
+        <script src="filter.js"></script>
+        <script src="privateMessage.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+    </body>
 </html>
