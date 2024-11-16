@@ -54,7 +54,7 @@ const limit = 2; //Number of posts to load per batch
 
 async function loadPosts() {
   try {
-const params = new URLSearchParams({
+    const params = new URLSearchParams({
       limit: limit,
       offset: offset,
     });
@@ -163,7 +163,8 @@ const params = new URLSearchParams({
 let handleInfiniteScroll = () => {
   throttle(() => {
     let endOfPage =
-      window.innerHeight + window.pageYOffset >= document.body.offsetHeight;
+      window.innerHeight + window.pageYOffset >=
+      document.body.offsetHeight - 30;
 
     if (endOfPage) {
       loadPosts();
@@ -201,7 +202,6 @@ const pdfDisplay = document.getElementById("pdfDisplay");
 const createPostPage = document.getElementById("createButton");
 const post = document.getElementById("postButtom");
 
-
 createPostPage.addEventListener("click", function () {
   const mainContainer = document.getElementById("main");
 
@@ -220,27 +220,27 @@ createPostPage.addEventListener("click", function () {
     });
 });
 
-let selectedFile = null; 
+let selectedFile = null;
 
 function handleFiles(event) {
   const files = event.target.files;
   if (files.length > 0) {
-      selectedFile = files[0]; 
-      if (selectedFile.type === "application/pdf") {
-          const fileURL = URL.createObjectURL(selectedFile);
-          
-          const pdfDisplay = document.createElement("iframe");
-          pdfDisplay.src = fileURL;
+    selectedFile = files[0];
+    if (selectedFile.type === "application/pdf") {
+      const fileURL = URL.createObjectURL(selectedFile);
 
-          const dropFileInputContainer = document.getElementById("dropArea");
-          dropFileInputContainer.innerHTML = ""; // Clear previous content
-          dropFileInputContainer.appendChild(pdfDisplay);
+      const pdfDisplay = document.createElement("iframe");
+      pdfDisplay.src = fileURL;
 
-          // Show the Remove PDF button
-          document.getElementById("removeButton").style.display = "inline-block";
-      } else {
-          alert("Please upload a valid PDF file.");
-      }
+      const dropFileInputContainer = document.getElementById("dropArea");
+      dropFileInputContainer.innerHTML = ""; // Clear previous content
+      dropFileInputContainer.appendChild(pdfDisplay);
+
+      // Show the Remove PDF button
+      document.getElementById("removeButton").style.display = "inline-block";
+    } else {
+      alert("Please upload a valid PDF file.");
+    }
   }
 }
 
@@ -255,17 +255,17 @@ async function uploadPost() {
   successMessageDiv.textContent = "";
 
   if (!title) {
-      errorMessageDiv.textContent = "Please enter a title.";
-      return;
+    errorMessageDiv.textContent = "Please enter a title.";
+    return;
   }
 
   if (!selectedFile) {
-      errorMessageDiv.textContent = "Please upload a PDF file.";
-      return;
+    errorMessageDiv.textContent = "Please upload a PDF file.";
+    return;
   }
 
-  const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d"; 
-  const createdAt = new Date().toISOString(); 
+  const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
+  const createdAt = new Date().toISOString();
 
   const formData = new FormData();
   formData.append("title", title);
@@ -274,18 +274,18 @@ async function uploadPost() {
   formData.append("user_uuid", userUUID);
 
   try {
-      const response = await fetch("/postss", {
-          method: "POST",
-          body: formData,
-      });
+    const response = await fetch("/postss", {
+      method: "POST",
+      body: formData,
+    });
 
-      if (response.ok) {
-          titleInput.value = "";
-          selectedFile = null; 
+    if (response.ok) {
+      titleInput.value = "";
+      selectedFile = null;
 
-          // Reset the drop area
-          const dropArea = document.getElementById("dropArea");
-          dropArea.innerHTML = `
+      // Reset the drop area
+      const dropArea = document.getElementById("dropArea");
+      dropArea.innerHTML = `
               <label for="inputPDF" id="drop-area">
                   <input id="inputPDF" type="file" accept=".pdf" hidden />
                   <div id="pdf-view">
@@ -295,16 +295,16 @@ async function uploadPost() {
               </label>
           `;
 
-          // Reattach the event listener to the new input
-          const inputPDF = document.getElementById("inputPDF");
-          inputPDF.addEventListener("change", handleFiles);
+      // Reattach the event listener to the new input
+      const inputPDF = document.getElementById("inputPDF");
+      inputPDF.addEventListener("change", handleFiles);
 
-          successMessageDiv.textContent = "Post uploaded successfully!";
-      } else {
-          errorMessageDiv.textContent = "Failed to upload post.";
-      }
+      successMessageDiv.textContent = "Post uploaded successfully!";
+    } else {
+      errorMessageDiv.textContent = "Failed to upload post.";
+    }
   } catch (error) {
-      errorMessageDiv.textContent = "An error occurred: " + error.message;
+    errorMessageDiv.textContent = "An error occurred: " + error.message;
   }
 }
 
