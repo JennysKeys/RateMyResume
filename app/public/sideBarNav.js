@@ -1,4 +1,9 @@
 let cardNum = 0;
+// Get references to the search input and button
+const searchInput = document.getElementById("searchInput");
+const searchButton = document.getElementById("searchButton");
+// Variable to store the current search term
+let currentSearchTerm = "";
 
 function openNav() {
   document.getElementById("mySidenav").style.width = "250px";
@@ -212,6 +217,20 @@ window.onload = function () {
 
 window.addEventListener("scroll", handleInfiniteScroll);
 
+searchButton.addEventListener("click", () => {
+  currentSearchTerm = searchInput.value.trim();
+
+  // Reset offset and clear existing posts
+  offset = 0;
+  cardContainer.innerHTML = "";
+
+  // Re-add the infinite scroll event listener if it was removed
+  window.removeEventListener("scroll", handleInfiniteScroll);
+  window.addEventListener("scroll", handleInfiniteScroll);
+
+  // Load posts with the new search term
+  loadPosts();
+});
 
 const pdfDisplay = document.getElementById("pdfDisplay");
 const createPostPage = document.getElementById("createButton");
