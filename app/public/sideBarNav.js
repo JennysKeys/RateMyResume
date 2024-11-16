@@ -54,7 +54,7 @@ const limit = 2; //Number of posts to load per batch
 
 async function loadPosts() {
   try {
-const params = new URLSearchParams({
+    const params = new URLSearchParams({
       limit: limit,
       offset: offset,
     });
@@ -220,7 +220,8 @@ const params = new URLSearchParams({
 let handleInfiniteScroll = () => {
   throttle(() => {
     let endOfPage =
-      window.innerHeight + window.pageYOffset >= document.body.offsetHeight;
+      window.innerHeight + window.pageYOffset >=
+      document.body.offsetHeight - 30;
 
     if (endOfPage) {
       loadPosts();
@@ -258,7 +259,6 @@ const pdfDisplay = document.getElementById("pdfDisplay");
 const createPostPage = document.getElementById("createButton");
 const post = document.getElementById("postButtom");
 
-
 createPostPage.addEventListener("click", function () {
   const mainContainer = document.getElementById("main");
 
@@ -277,7 +277,7 @@ createPostPage.addEventListener("click", function () {
     });
 });
 
-let selectedFile = null; 
+let selectedFile = null;
 
 function handleFiles(event) {
   const files = event.target.files;
@@ -316,17 +316,17 @@ async function uploadPost() {
   successMessageDiv.textContent = "";
 
   if (!title) {
-      errorMessageDiv.textContent = "Please enter a title.";
-      return;
+    errorMessageDiv.textContent = "Please enter a title.";
+    return;
   }
 
   if (!selectedFile) {
-      errorMessageDiv.textContent = "Please upload a PDF file.";
-      return;
+    errorMessageDiv.textContent = "Please upload a PDF file.";
+    return;
   }
 
-  const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d"; 
-  const createdAt = new Date().toISOString(); 
+  const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
+  const createdAt = new Date().toISOString();
 
   const formData = new FormData();
   formData.append("title", title);
@@ -335,14 +335,14 @@ async function uploadPost() {
   formData.append("user_uuid", userUUID);
 
   try {
-      const response = await fetch("/postss", {
-          method: "POST",
-          body: formData,
-      });
+    const response = await fetch("/postss", {
+      method: "POST",
+      body: formData,
+    });
 
-      if (response.ok) {
-          titleInput.value = "";
-          selectedFile = null; 
+    if (response.ok) {
+      titleInput.value = "";
+      selectedFile = null;
 
           const dropArea = document.getElementById("dropArea");
           dropArea.textContent = ""; 
@@ -384,12 +384,12 @@ async function uploadPost() {
           dropArea.appendChild(label);
           input.addEventListener("change", handleFiles);
 
-          successMessageDiv.textContent = "Post uploaded successfully!";
-      } else {
-          errorMessageDiv.textContent = "Failed to upload post.";
-      }
+      successMessageDiv.textContent = "Post uploaded successfully!";
+    } else {
+      errorMessageDiv.textContent = "Failed to upload post.";
+    }
   } catch (error) {
-      errorMessageDiv.textContent = "An error occurred: " + error.message;
+    errorMessageDiv.textContent = "An error occurred: " + error.message;
   }
 }
 
