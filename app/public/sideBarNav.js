@@ -52,6 +52,30 @@ let createCardBtn = (icon, bottom, left, id, onClick) => {
 let offset = 0;
 const limit = 2; //Number of posts to load per batch
 
+function timeSince(date) {
+  const now = new Date();
+  const postDate = new Date(date);
+  const secondsPast = Math.floor((now - postDate) / 1000);
+
+  if (secondsPast < 60) {
+    return `${secondsPast} sec${secondsPast !== 1 ? "s" : ""} ago`;
+  }
+  if (secondsPast < 3600) {
+    const minutes = Math.floor(secondsPast / 60);
+    return `${minutes} min${minutes !== 1 ? "s" : ""} ago`;
+  }
+  if (secondsPast < 86400) {
+    const hours = Math.floor(secondsPast / 3600);
+    return `${hours} hr${hours !== 1 ? "s" : ""} ago`;
+  }
+  if (secondsPast < 2592000) {
+    // 30 days
+    const days = Math.floor(secondsPast / 86400);
+    return `${days} day${days !== 1 ? "s" : ""} ago`;
+  }
+  return `30+ days ago`;
+}
+
 async function loadPosts() {
   try {
     const params = new URLSearchParams({
@@ -91,7 +115,7 @@ async function loadPosts() {
       const usernameElement = document.createElement("h3");
       usernameElement.textContent = post.username;
       const dateElement = document.createElement("p");
-      dateElement.textContent = post.created_at;
+      dateElement.textContent = timeSince(post.created_at);
 
       headerContainer.appendChild(usernameElement);
       headerContainer.appendChild(dateElement);
