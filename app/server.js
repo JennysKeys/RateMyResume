@@ -89,20 +89,33 @@ app.post("/send-message", async (req, res) => {
 });
 
 app.get("/posts", async (req, res) => {
-  const limit = parseInt(req.query.limit) || 2; //Number of posts to load per batch
-  const offset = parseInt(req.query.offset) || 0; //Offset to start fetching posts from
+  const limit = parseInt(req.query.limit) || 2; // Number of posts to load per batch
+  const offset = parseInt(req.query.offset) || 0; // Offset to start fetching posts from
+  const search = req.query.search || ""; // Get the search term from query parameters
 
   try {
-    const result = await pool.query(
-      `
-      SELECT Users.username, Posts.title, Posts.created_at
-      FROM Posts
-      JOIN Users ON Posts.userID = Users.userID
-      ORDER BY Posts.created_at DESC
-      LIMIT $1 OFFSET $2
-      `,
-      [limit, offset]
-    );
+    let query = `
+        SELECT Users.username, Posts.title, Posts.created_at
+        FROM Posts
+        JOIN Users ON Posts.userID = Users.userID
+      `;
+
+    let queryParams = [];
+
+    // If there's a search term, add a WHERE clause
+    if (search) {
+      query += ` WHERE LOWER(Users.username) LIKE $1`;
+      queryParams.push(`%${search.toLowerCase()}%`);
+    }
+
+    // Add ORDER BY, LIMIT, and OFFSET clauses
+    query += `
+        ORDER BY Posts.created_at DESC
+        LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
+      `;
+    queryParams.push(limit, offset);
+
+    const result = await pool.query(query, queryParams);
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching posts:", error);
