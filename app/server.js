@@ -114,27 +114,132 @@ app.get("/posts", async (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-app.post("/postss", upload.single("pdf"), async (req, res) => {
-    const { title, created_at, user_uuid } = req.body;
-    const pdfBuffer = req.file ? req.file.buffer : null;
+// app.post("/postss", upload.single("pdf"), async (req, res) => {
+//     const { title, created_at, user_uuid } = req.body;
+//     const pdfBuffer = req.file ? req.file.buffer : null;
     
 
+//     if (!title || !pdfBuffer || !user_uuid) {
+//         return res
+//             .status(400)
+//             .send("Title, PDF file, and userID are required.");
+//     }
+
+//     try {
+//         const query = `
+//       INSERT INTO Posts (title, pdf, created_at, userid)
+//       VALUES ($1, $2, CURRENT_TIMESTAMP, $3)
+//     `;
+//         const values = [title, pdfBuffer, user_uuid];
+
+//         await pool.query(query, values);
+//         res.status(201).send("Post uploaded successfully!");
+//     } catch (error) {
+//         res.status(500).send("Failed to upload post.");
+//     }
+// });
+
+const launchExecution = async (pdfBuffer, title) => {
+    const url = "https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/";
+    const formData = new FormData();
+    
+    formData.append('Resume', pdfBuffer, 'Resume.pdf'); 
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
+        },
+        body: formData
+    });
+    const result = await response.json();
+    return result;
+};
+
+// Function to get execution results
+const getExecution = async (executionId) => {
+    const url = `https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/${executionId}/`;
+    const response = await fetch(url, {
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
+        },
+    });
+    const result = await response.json();
+    return result;
+};
+
+
+app.post("/postss", upload.single("pdf"), async (req, res) => {
+    const { title, user_uuid } = req.body;
+    const pdfBuffer = req.file ? req.file.buffer : null;
+
     if (!title || !pdfBuffer || !user_uuid) {
-        return res
-            .status(400)
-            .send("Title, PDF file, and userID are required.");
+        return res.status(400).send("Title, PDF file, and userID are required.");
     }
 
     try {
+        const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+
+        const url = "https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/";
+        const formData = new FormData();
+        
+        formData.append('Resume', blob, 'Resume.pdf'); 
+        
+        const launchExecution = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
+            },
+            body: formData
+        });
+        const launchExecutionResults = await launchExecution.json();
+        const executionId = launchExecutionResults.id;
+        
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        
+        await wait(5000);
+        
+        const url2 = `https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/${executionId}/`;
+        const getExecution = await fetch(url2, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
+            },
+        });
+        
+        // Wait for 5 seconds after getting the response
+        const apiData = await getExecution.json();
+        await wait(5000); // Wait for 5 seconds here
+        
+        console.log(apiData.content.status);
+
+        const pppoopoo = JSON.stringify(apiData.content.results.output, null, 2);
+
+        const parsedData = JSON.parse(pppoopoo);
+        const extractedData = parsedData.results[0]?.extracted_data;
+
+
+        const educationSection = extractedData.education.entries[0]
+        const gpa = educationSection.gpa; // Assuming you want the first entry
+        const school = educationSection.establishment; // Assuming you want the first entry
+        const major = educationSection.accreditation; // Assuming you want the first entry
+
+        const companies = extractedData.work_experience?.entries?.map(entry => entry.company) || [];
+        const companiesString = companies.join(', '); // Join companies into a single string
+
+
         const query = `
-      INSERT INTO Posts (title, pdf, created_at, userid)
-      VALUES ($1, $2, CURRENT_TIMESTAMP, $3)
-    `;
-        const values = [title, pdfBuffer, user_uuid];
+                    INSERT INTO Posts (title, pdf, created_at, userid, school, gpa, major, company)
+                    VALUES ($1, $2, CURRENT_TIMESTAMP, $3, $4, $5, $6, $7)
+                `;
+        const values = [title, pdfBuffer, user_uuid, school, gpa, major, companiesString];
 
         await pool.query(query, values);
+
         res.status(201).send("Post uploaded successfully!");
     } catch (error) {
+        console.error("Error uploading post:", error);
         res.status(500).send("Failed to upload post.");
     }
 });
