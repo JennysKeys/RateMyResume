@@ -76,7 +76,7 @@ function timeSince(date) {
   return `30+ days ago`;
 }
 
-async function loadPosts() {
+async function loadPosts(needFilter, filters) {
   try {
     const params = new URLSearchParams({
       limit: limit,
@@ -85,18 +85,31 @@ async function loadPosts() {
     if (currentSearchTerm) {
       params.append("search", currentSearchTerm);
     }
-    const response = await fetch(
-      `http://localhost:3000/posts?${params.toString()}`
-    );
+    let response;
+    
+    if(needFilter) {
+      params.append("schools", filters.schools);
+      params.append("gpas", filters.gpas);
+      params.append("majors", filters.majors);
+      response = await fetch(
+        `http://localhost:3000/filter?${params.toString()}`
+      );
+    } else {
+      response = await fetch(
+        `http://localhost:3000/posts?${params.toString()}`
+      );
+    }
+    
     const posts = await response.json();
-    if (offset === 0) {
+    console.log(posts.length, offset, limit);
+    if (offset == 0) {
       cardContainer.innerHTML = "";
     }
     offset += limit;
 
-    if (posts.length === 0) {
+    if (posts.length == 0) {
       // If no posts are returned and it's the first batch, display a message
-      if (offset === limit) {
+      if (offset == limit) {
         const noResultsMessage = document.createElement("p");
         noResultsMessage.textContent = "No posts found.";
         noResultsMessage.style.marginLeft = "370px";
@@ -247,7 +260,7 @@ let handleInfiniteScroll = () => {
       document.body.offsetHeight - 30;
 
     if (endOfPage) {
-      loadPosts();
+      loadPosts(false);
     }
   }, 100);
 };
@@ -258,7 +271,7 @@ let removeInfiniteScroll = () => {
 };
 
 window.onload = function () {
-  loadPosts();
+  loadPosts(false);
 };
 
 window.addEventListener("scroll", handleInfiniteScroll);
@@ -275,7 +288,7 @@ searchButton.addEventListener("click", () => {
   window.addEventListener("scroll", handleInfiniteScroll);
 
   // Load posts with the new search term
-  loadPosts();
+  loadPosts(false);
 });
 
 const pdfDisplay = document.getElementById("pdfDisplay");
