@@ -1,6 +1,6 @@
-let form = document.getElementById("form");
+let filterForm = document.getElementById("form");
 
-form.addEventListener("submit", filter);
+filterForm.addEventListener("submit", filter);
 
 function filter(event) {
   let inputs = form.getElementsByTagName("input");
@@ -13,18 +13,18 @@ function filter(event) {
         if(i.type == "checkbox") {
             if (i.checked) {
             checked.push(i);
-            if(i.name == "school") {
-                schools.push(i);
-            } else if(i.name == "gpa") {
-                gpas.push(i);
-            } else if(i.name == "major") {
-                majors.push(i);
+            if(i.id == "school") {
+                schools.push(i.value);
+            } else if(i.id == "gpa") {
+                gpas.push(i.value);
+            } else if(i.id == "major") {
+                majors.push(i.value);
             }
-            console.log(i.id + ": " + i.value);
         }
         }
         
     }
-
-    
+    let filters = {schools, gpas, majors};
+    offset = 0;
+    loadPosts(true, filters);
 }
