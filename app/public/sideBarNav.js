@@ -107,7 +107,6 @@ async function loadPosts() {
     }
 
     posts.forEach((post, index) => {
-      console.log(post.pdf);
       console.log(post.title);
 
       const card = document.createElement("div");
