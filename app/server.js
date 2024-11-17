@@ -51,6 +51,96 @@ app.get("/database", async (req, res) => {
     res.status(404);
 });
 
+app.get("/filter", async(req, res) => {
+    let startWhere = true;
+    const limit = parseInt(req.query.limit) || 2; // Number of posts to load per batch
+    const offset = parseInt(req.query.offset) || 0; // Offset to start fetching posts from
+    const search = req.query.search || ""; // Get the search term from query parameters
+    let schoolString = req.query.schools || "";
+    let schools = schoolString.split(',');
+    let majorString = req.query.majors || "";
+    let majors = majorString.split(",");
+
+    console.log(schools);
+
+    try {
+        let query = `
+        SELECT Posts.title, Posts.created_at, Posts.school, Posts.major, Posts.pdf
+        FROM Posts
+      `;
+
+        let queryParams = [];
+        let parmsCount = 1;
+
+        if(search || schoolString || majorString) {
+            query += ` WHERE`;
+        }
+
+        // If there's a search term, add a WHERE clause
+        // if (search) {
+        //     query += ` LOWER(Users.username) LIKE $${parmsCount}`;
+        //     parmsCount++;
+        //     queryParams.push(`%${search.toLowerCase()}%`);
+        //     startWhere = false;
+        // }
+
+        if (schoolString) {
+            let firstSchool = true
+            if(!startWhere) {
+                query += ' AND';
+            }
+            for(school of schools) {
+                if(!firstSchool) {
+                    query += ' OR';
+                } else {
+                    query += '('
+                }
+                query += ` LOWER(Posts.school) LIKE $${parmsCount}`;
+                parmsCount++;
+                queryParams.push(`%${school.toLowerCase()}%`);
+                firstSchool = false;
+            }
+            query += ')'
+        }
+
+        if (majorString) {
+            let firstMajor = true
+            if(!startWhere) {
+                query += ' AND';
+            }
+            for(major of majors) {
+                if(!firstMajor) {
+                    query += ' OR';
+                } else {
+                    query += '('
+                }
+                query += ` LOWER(Posts.major) LIKE $${parmsCount}`;
+                queryParams.push(`%${major.toLowerCase()}%`);
+                parmsCount++;
+                firstMajor = false;
+            }
+            query += ')'
+        }
+
+        // Add ORDER BY, LIMIT, and OFFSET clauses
+        query += `
+        ORDER BY Posts.created_at DESC
+        LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
+      `;
+        queryParams.push(limit, offset);
+
+        console.log(query);
+        console.log(queryParams);
+        const result = await pool.query(query, queryParams);
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Error fetching filtered posts:", error);
+        res.status(500).json({
+            error: "An error occurred while fetching filtered posts",
+        });
+    }
+});
+
 app.get("/get-messages", async (req, res) => {
     const { senderID, receiverID } = req.query;
     const client = await pool.connect();
@@ -115,6 +205,8 @@ app.get("/posts", async (req, res) => {
       `;
         queryParams.push(limit, offset);
 
+        console.log("SEARCH: ", query);
+        console.log(queryParams);
         const result = await pool.query(query, queryParams);
         res.json(result.rows);
     } catch (error) {
