@@ -99,6 +99,7 @@ app.get("/filter", async(req, res) => {
                 parmsCount++;
                 queryParams.push(`%${school.toLowerCase()}%`);
                 firstSchool = false;
+                startWhere = false;
             }
             query += ')'
         }
@@ -118,6 +119,7 @@ app.get("/filter", async(req, res) => {
                 queryParams.push(`%${major.toLowerCase()}%`);
                 parmsCount++;
                 firstMajor = false;
+                startWhere = false;
             }
             query += ')'
         }
