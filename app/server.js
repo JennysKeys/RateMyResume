@@ -162,6 +162,11 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
         const parsedData = JSON.parse(pppoopoo);
         const extractedData = parsedData.results[0]?.extracted_data;
 
+    if (!title || !pdfBuffer || !user_uuid) {
+        return res
+            .status(400)
+            .send("Title, PDF file, and userID are required.");
+    }
 
         const educationSection = extractedData.education.entries[0]
         const gpa = educationSection.gpa; // Assuming you want the first entry
@@ -229,5 +234,6 @@ app.post("/login", (req, res, next) => {
 });
 
 app.listen(port, hostname, () => {
-  console.log(`Listening at: http://${hostname}:${port}`);
+    console.log(`Listening at: http://${hostname}:${port}`);
+    startWebSocketServer();
 });
