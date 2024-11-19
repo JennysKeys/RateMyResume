@@ -341,6 +341,94 @@ function handleFiles(event) {
 
 
 
+// async function uploadPost() {
+//   const titleInput = document.getElementById("title");
+//   const title = titleInput.value.trim();
+//   const errorMessageDiv = document.getElementById("errorMessage");
+//   const successMessageDiv = document.getElementById("successMessage");
+
+//   // Clear previous messages
+//   errorMessageDiv.textContent = "";
+//   successMessageDiv.textContent = "";
+
+//   if (!title) {
+//     errorMessageDiv.textContent = "Please enter a title.";
+//     return;
+//   }
+
+//   if (!selectedFile) {
+//     errorMessageDiv.textContent = "Please upload a PDF file.";
+//     return;
+//   }
+
+//   const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
+//   const createdAt = new Date().toISOString();
+
+//   const formData = new FormData();
+//   formData.append("title", title);
+//   formData.append("pdf", selectedFile);
+//   formData.append("created_at", createdAt);
+//   formData.append("user_uuid", userUUID);
+
+//   try {
+//     const response = await fetch("/postss", {
+//       method: "POST",
+//       body: formData,
+//     });
+
+//     if (response.ok) {
+//       titleInput.value = "";
+//       selectedFile = null;
+
+//           const dropArea = document.getElementById("dropArea");
+//           dropArea.textContent = ""; 
+
+//           const label = document.createElement("label");
+//           label.setAttribute("for", "inputPDF");
+//           label.id = "drop-area";
+
+//           const input = document.createElement("input");
+//           input.id = "inputPDF";
+//           input.type = "file";
+//           input.accept = ".pdf";
+//           input.hidden = true;
+
+//           const pdfView = document.createElement("div");
+//           pdfView.id = "pdf-view";
+//           while (pdfView.firstChild) {
+//             pdfView.removeChild(pdfView.firstChild);
+//           }
+
+//           const newParagraph = document.createElement('p');
+//           const textBeforeBr = document.createTextNode('Drag and Drop or Click here');
+//           const newBr = document.createElement('br');
+//           const textAfterBr = document.createTextNode('to upload PDF');
+
+//           newParagraph.appendChild(textBeforeBr);
+//           newParagraph.appendChild(newBr);
+//           newParagraph.appendChild(textAfterBr);
+//           pdfView.appendChild(newParagraph);
+
+//           const newSpan = document.createElement('span');
+//           newSpan.className = 'bottom-text';
+//           newSpan.textContent = 'Upload any PDF from desktop';
+
+//           pdfView.appendChild(newParagraph);
+//           pdfView.appendChild(newSpan);
+//           label.appendChild(input);
+//           label.appendChild(pdfView);
+//           dropArea.appendChild(label);
+//           input.addEventListener("change", handleFiles);
+
+//       successMessageDiv.textContent = "Post uploaded successfully!";
+//     } else {
+//       errorMessageDiv.textContent = "Failed to upload post.";
+//     }
+//   } catch (error) {
+//     errorMessageDiv.textContent = "An error occurred: " + error.message;
+//   }
+// }
+
 async function uploadPost() {
   const titleInput = document.getElementById("title");
   const title = titleInput.value.trim();
@@ -377,48 +465,55 @@ async function uploadPost() {
     });
 
     if (response.ok) {
+      const data = await response.json(); // Get the response data
+      const postId = data.postId; // Extract the postId
+
+      // Call the processing function
+      processPost(postId);
+
+      // Reset the input fields
       titleInput.value = "";
       selectedFile = null;
 
-          const dropArea = document.getElementById("dropArea");
-          dropArea.textContent = ""; 
+      // Reset the drop area
+      const dropArea = document.getElementById("dropArea");
+      dropArea.textContent = ""; 
+      const label = document.createElement("label");
+      label.setAttribute("for", "inputPDF");
+      label.id = "drop-area";
 
-          const label = document.createElement("label");
-          label.setAttribute("for", "inputPDF");
-          label.id = "drop-area";
+      const input = document.createElement("input");
+      input.id = "inputPDF";
+      input.type = "file";
+      input.accept = ".pdf";
+      input.hidden = true;
 
-          const input = document.createElement("input");
-          input.id = "inputPDF";
-          input.type = "file";
-          input.accept = ".pdf";
-          input.hidden = true;
+      const pdfView = document.createElement("div");
+      pdfView.id = "pdf-view";
+      while (pdfView.firstChild) {
+        pdfView.removeChild(pdfView.firstChild);
+      }
 
-          const pdfView = document.createElement("div");
-          pdfView.id = "pdf-view";
-          while (pdfView.firstChild) {
-            pdfView.removeChild(pdfView.firstChild);
-          }
+      const newParagraph = document.createElement('p');
+      const textBeforeBr = document.createTextNode('Drag and Drop or Click here');
+      const newBr = document.createElement('br');
+      const textAfterBr = document.createTextNode('to upload PDF');
 
-          const newParagraph = document.createElement('p');
-          const textBeforeBr = document.createTextNode('Drag and Drop or Click here');
-          const newBr = document.createElement('br');
-          const textAfterBr = document.createTextNode('to upload PDF');
+      newParagraph.appendChild(textBeforeBr);
+      newParagraph.appendChild(newBr);
+      newParagraph.appendChild(textAfterBr);
+      pdfView.appendChild(newParagraph);
 
-          newParagraph.appendChild(textBeforeBr);
-          newParagraph.appendChild(newBr);
-          newParagraph.appendChild(textAfterBr);
-          pdfView.appendChild(newParagraph);
+      const newSpan = document.createElement('span');
+      newSpan.className = 'bottom-text';
+      newSpan.textContent = 'Upload any PDF from desktop';
 
-          const newSpan = document.createElement('span');
-          newSpan.className = 'bottom-text';
-          newSpan.textContent = 'Upload any PDF from desktop';
-
-          pdfView.appendChild(newParagraph);
-          pdfView.appendChild(newSpan);
-          label.appendChild(input);
-          label.appendChild(pdfView);
-          dropArea.appendChild(label);
-          input.addEventListener("change", handleFiles);
+      pdfView.appendChild(newParagraph);
+      pdfView.appendChild(newSpan);
+      label.appendChild(input);
+      label.appendChild(pdfView);
+      dropArea.appendChild(label);
+      input.addEventListener("change", handleFiles);
 
       successMessageDiv.textContent = "Post uploaded successfully!";
     } else {
@@ -429,6 +524,23 @@ async function uploadPost() {
   }
 }
 
+async function processPost(postId) {
+
+  try {
+    const processResponse = await fetch(`/process/${postId}`, {
+      method: 'POST',
+    });
+
+    if (processResponse.ok) {
+      console.log("Post processed successfully!");
+      // You can also update the UI or show a success message here
+    } else {
+      console.error("Failed to process the post.");
+    }
+  } catch (error) {
+    console.error("Error processing post:", error);
+  }
+}
 
 function removePost() {
   selectedFile = null; // Clear the selected file
