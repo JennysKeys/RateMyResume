@@ -221,7 +221,6 @@ app.get("/posts", async (req, res) => {
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
-
 app.post("/postss", upload.single("pdf"), async (req, res) => {
     const { title, user_uuid } = req.body;
     const pdfBuffer = req.file ? req.file.buffer : null;
@@ -231,38 +230,65 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
     }
 
     try {
-        const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+        const query = `
+            INSERT INTO Posts (title, pdf, created_at, userid)
+            VALUES ($1, $2, CURRENT_TIMESTAMP, $3) RETURNING postid
+        `;
+        const values = [title, pdfBuffer, user_uuid];
+        const result = await pool.query(query, values);
+        const postId = result.rows[0].postid; 
 
-        const url = "https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/";
+        res.status(201).json({ postId });
+    } catch (error) {
+        console.error("Error uploading post:", error);
+        res.status(500).send("Failed to upload post.");
+    }
+});
+
+app.post("/process/:postId", async (req, res) => {
+    const { postId } = req.params;
+
+    console.log(postId);
+    try {
+        // Fetch the PDF from the database using postId
+        const query = `SELECT pdf FROM Posts WHERE postid = $1`;
+        const result = await pool.query(query, [postId]);
+        const pdfBuffer = result.rows[0]?.pdf;
+
+        if (!pdfBuffer) {
+            return res.status(404).send("PDF not found.");
+        }
+
+        // Call the external API to process the PDF
+        const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+        const apiUrl = "https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/";
         const formData = new FormData();
-        
-        formData.append('Resume', blob, 'Resume.pdf'); 
-        
-        const launchExecution = await fetch(url, {
+        formData.append('Resume', blob, 'Resume.pdf');
+
+        const launchExecution = await fetch(apiUrl, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
             },
             body: formData
         });
+
         const launchExecutionResults = await launchExecution.json();
         const executionId = launchExecutionResults.id;
-        
-        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-        
-        await wait(5000);
-        
-        const url2 = `https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/${executionId}/`;
-        const getExecution = await fetch(url2, {
+
+        await new Promise(resolve => setTimeout(resolve, 5000)); 
+
+        const getExecutionUrl = `https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/${executionId}/`;
+        const getExecution = await fetch(getExecutionUrl, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
             },
         });
-        
-        // Wait for 5 seconds after getting the response
+
+        await new Promise(resolve => setTimeout(resolve, 10000)); 
+
         const apiData = await getExecution.json();
-        await wait(5000); // Wait for 5 seconds here
         
         console.log(apiData.content.status);
 
@@ -271,28 +297,26 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
         const parsedData = JSON.parse(pppoopoo);
         const extractedData = parsedData.results[0]?.extracted_data;
 
-
         const educationSection = extractedData.education.entries[0]
-        const gpa = educationSection.gpa; // Assuming you want the first entry
-        const school = educationSection.establishment; // Assuming you want the first entry
-        const major = educationSection.accreditation; // Assuming you want the first entry
+        const gpa = educationSection.gpa; 
+        const school = educationSection.establishment; 
+        const major = educationSection.accreditation;
 
         const companies = extractedData.work_experience?.entries?.map(entry => entry.company) || [];
-        const companiesString = companies.join(', '); // Join companies into a single string
+        const companiesString = companies.join(', '); 
 
+        const updateQuery = `
+            UPDATE Posts
+            SET gpa = $1, major = $2, school = $3, company = $4
+            WHERE postid = $5
+        `;
+        const updateValues = [gpa, major, school, companiesString, postId];
+        await pool.query(updateQuery, updateValues);
 
-        const query = `
-                    INSERT INTO Posts (title, pdf, created_at, userid, school, gpa, major, company)
-                    VALUES ($1, $2, CURRENT_TIMESTAMP, $3, $4, $5, $6, $7)
-                `;
-        const values = [title, pdfBuffer, user_uuid, school, gpa, major, companiesString];
-
-        await pool.query(query, values);
-
-        res.status(201).send("Post uploaded successfully!");
+        res.status(200).send("Post processed successfully!");
     } catch (error) {
-        console.error("Error uploading post:", error);
-        res.status(500).send("Failed to upload post.");
+        console.error("Error processing post:", error);
+        res.status(500).send("Failed to process post.");
     }
 });
 
