@@ -89,7 +89,8 @@ async function loadPosts(needFilter, filters) {
 
     if (needFilter) {
       params.append("schools", filters.schools);
-      params.append("gpas", filters.gpas);
+      params.append("gpaMin", filters.gpaMin);
+      params.append("gpaMax", filters.gpaMax);
       params.append("majors", filters.majors);
       response = await fetch(
         `http://localhost:3000/filter?${params.toString()}`
