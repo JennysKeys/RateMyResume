@@ -255,11 +255,11 @@ async function loadPosts(needFilter, filters) {
   }
 }
 
-function showPostDetail(post) {
+async function showPostDetail(post) {
   const mainContainer = document.getElementById("main");
   fetch("postDetail.html")
     .then((response) => response.text())
-    .then((html) => {
+    .then(async (html) => {
       mainContainer.innerHTML = html;
 
       const titleElement = document.getElementById("post-title");
@@ -272,6 +272,9 @@ function showPostDetail(post) {
       usernameElement.textContent = post.username;
       dateElement.textContent = timeSince(post.created_at);
       postIdElement.value = post.postid; 
+
+      const comments = await fetchComments(post.postid);
+      displayComments(comments);
 
       // Render the PDF
       const canvas = document.createElement("canvas");
@@ -312,6 +315,68 @@ function showPostDetail(post) {
     .catch((error) => {
       console.error("Error loading post detail:", error);
     });
+}
+
+function displayComments(comments) {
+  const commentsSection = document.getElementById("commentsSection");
+  commentsSection.innerHTML = ""; // Clear existing comments
+
+  // Sort comments by created_at date (newest first)
+  comments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  comments.forEach(comment => {
+      // Create the main comment div
+      const commentDiv = document.createElement("div");
+      commentDiv.className = "comment";
+
+      // Create the comment header
+      const commentHeader = document.createElement("div");
+      commentHeader.className = "comment-header";
+
+      // Create and append username
+      const usernameSpan = document.createElement("span");
+      usernameSpan.className = "username";
+      usernameSpan.textContent = comment.username;
+      commentHeader.appendChild(usernameSpan);
+
+      // Create and append timestamp
+      const timestampSpan = document.createElement("span");
+      timestampSpan.className = "timestamp";
+      timestampSpan.textContent = timeSince(comment.created_at);
+      commentHeader.appendChild(timestampSpan);
+
+      // Create and append the comment body
+      const commentBody = document.createElement("div");
+      commentBody.className = "comment-body";
+      commentBody.textContent = comment.body;
+
+      // Create comment buttons container
+      const commentButtons = document.createElement("div");
+      commentButtons.className = "comment-buttons";
+      // Add buttons for reply or delete if needed (you can create buttons here)
+
+      // Append all parts to the main comment div
+      commentDiv.appendChild(commentHeader);
+      commentDiv.appendChild(commentBody);
+      commentDiv.appendChild(commentButtons);
+
+      // Finally, append the comment div to the comments section
+      commentsSection.appendChild(commentDiv);
+  });
+}
+
+async function fetchComments(postId) {
+  try {
+      const response = await fetch(`/comments/${postId}`);
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+      const comments = await response.json();
+      return comments;
+  } catch (error) {
+      console.error("Error fetching comments:", error);
+      return []; // Return an empty array on error
+  }
 }
 
 let handleInfiniteScroll = () => {
@@ -575,7 +640,6 @@ function cancelComment() {
   document.getElementById('smallCommentInput').style.display = 'block';
   document.getElementById('commentTextArea').value = ''; // Clear the textarea
 }
-
 async function submitComment() {
   const commentText = document.getElementById('commentTextArea').value;
   const postId = document.getElementById('postId').value; 
@@ -599,9 +663,18 @@ async function submitComment() {
 
     if (response.ok) {
       console.log("Comment submitted successfully.");
+      const newComment = await response.json(); 
+
       document.getElementById("commentTextArea").value = ""; 
       document.getElementById("largeCommentInput").style.display = "none"; 
       document.getElementById("smallCommentInput").style.display = "block"; 
+
+      const existingCommentsResponse = await fetch(`/comments/${postId}`);
+      const existingComments = await existingCommentsResponse.json();
+
+      const allComments = [...existingComments, newComment];
+
+      displayComments(allComments);
     } else {
       console.error("Failed to submit comment:", response.statusText);
     }

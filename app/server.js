@@ -382,6 +382,25 @@ app.post('/comments', async (req, res) => {
     }
   });
 
+  app.get('/comments/:postId', async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT c.commentID, c.body, c.created_at, c.resumeID, c.userID, u.username
+             FROM Comments c
+             JOIN Users u ON c.userID = u.userID
+             WHERE c.resumeID = $1
+             ORDER BY c.created_at DESC`,
+            [postId]
+        );
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error fetching comments:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
     startWebSocketServer();
