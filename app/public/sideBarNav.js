@@ -86,8 +86,8 @@ async function loadPosts(needFilter, filters) {
       params.append("search", currentSearchTerm);
     }
     let response;
-    
-    if(needFilter) {
+
+    if (needFilter) {
       params.append("schools", filters.schools);
       params.append("gpas", filters.gpas);
       params.append("majors", filters.majors);
@@ -99,7 +99,7 @@ async function loadPosts(needFilter, filters) {
         `http://localhost:3000/posts?${params.toString()}`
       );
     }
-    
+
     const posts = await response.json();
     console.log(posts.length, offset, limit);
     if (offset == 0) {
@@ -125,6 +125,10 @@ async function loadPosts(needFilter, filters) {
       const card = document.createElement("div");
       card.className = "card";
 
+      card.addEventListener("click", () => {
+        showPostDetail(post);
+      });
+
       // Header div for username and date
       const headerContainer = document.createElement("div");
       headerContainer.className = "card-header";
@@ -145,9 +149,9 @@ async function loadPosts(needFilter, filters) {
       titleContainer.appendChild(titleElement);
 
       const pdfContainer = document.createElement("div");
-      pdfContainer.style.width = "100%"; 
-      pdfContainer.style.height = "450px"; 
-      pdfContainer.style.overflow = "auto"; 
+      pdfContainer.style.width = "100%";
+      pdfContainer.style.height = "450px";
+      pdfContainer.style.overflow = "auto";
       pdfContainer.style.borderBottom = "1px solid #ccc"; // Add border below PDF
       const canvas = document.createElement("canvas");
       canvas.style.width = "100%"; // Make canvas full width
@@ -156,46 +160,46 @@ async function loadPosts(needFilter, filters) {
 
       if (post.pdf && post.pdf.data) {
         const loadingTask = pdfjsLib.getDocument({ data: post.pdf.data });
-        loadingTask.promise.then(pdf => {
-            pdf.getPage(1).then(page => {
-                const desiredWidth = pdfContainer.clientWidth; 
-                const scale = desiredWidth / page.getViewport({ scale: 1 }).width; 
-                const viewport = page.getViewport({ scale: scale }); 
-    
-                canvas.width = viewport.width; 
-                canvas.height = viewport.height; 
-    
-                const renderContext = {
-                    canvasContext: canvas.getContext('2d'),
-                    viewport: viewport
-                };
-                page.render(renderContext);
+        loadingTask.promise
+          .then((pdf) => {
+            pdf.getPage(1).then((page) => {
+              const desiredWidth = pdfContainer.clientWidth;
+              const scale = desiredWidth / page.getViewport({ scale: 1 }).width;
+              const viewport = page.getViewport({ scale: scale });
+
+              canvas.width = viewport.width;
+              canvas.height = viewport.height;
+
+              const renderContext = {
+                canvasContext: canvas.getContext("2d"),
+                viewport: viewport,
+              };
+              page.render(renderContext);
             });
-        }).catch(error => {
+          })
+          .catch((error) => {
             console.error("Error loading PDF:", error);
             const errorMessage = document.createElement("p");
             errorMessage.textContent = "Failed to load PDF.";
             pdfContainer.appendChild(errorMessage);
-        });
-    } else {
+          });
+      } else {
         console.warn("PDF data is missing for post:", post);
         const errorMessage = document.createElement("p");
         errorMessage.textContent = "PDF data is unavailable.";
         pdfContainer.appendChild(errorMessage);
-    }
+      }
 
       card.appendChild(headerContainer);
       card.appendChild(document.createElement("hr"));
       card.appendChild(titleContainer);
-      card.appendChild(pdfContainer); 
+      card.appendChild(pdfContainer);
 
       // Create buttons container
       const buttonsContainer = document.createElement("div");
       // buttonsContainer.style.borderTop = "2px solid #ccc"; // Add border above buttons
       // buttonsContainer.style.paddingTop = "10px"; // Add some padding
       buttonsContainer.className = "buttonsContainer"; // Use a class for styling
-
-      
 
       let buttonUp = createCardBtn(
         "fas fa-arrow-up",
@@ -250,8 +254,62 @@ async function loadPosts(needFilter, filters) {
     console.error("Error loading posts:", error);
   }
 }
+function showPostDetail(post) {
+  const mainContainer = document.getElementById("main");
+  fetch("postDetail.html")
+    .then((response) => response.text())
+    .then((html) => {
+      mainContainer.innerHTML = html;
 
+      const titleElement = document.getElementById("post-title");
+      const pdfContainer = document.getElementById("pdf-container");
+      const usernameElement = document.getElementById("username");
+      const dateElement = document.getElementById("date");
 
+      titleElement.textContent = post.title;
+      usernameElement.textContent = post.username;
+      dateElement.textContent = timeSince(post.created_at);
+
+      //Render the PDF
+      const canvas = document.createElement("canvas");
+      canvas.style.width = "100%";
+      pdfContainer.appendChild(canvas);
+
+      if (post.pdf && post.pdf.data) {
+        const loadingTask = pdfjsLib.getDocument({ data: post.pdf.data });
+        loadingTask.promise
+          .then((pdf) => {
+            pdf.getPage(1).then((page) => {
+              const viewport = page.getViewport({ scale: 1 });
+
+              canvas.height = viewport.height;
+              canvas.width = viewport.width;
+
+              const renderContext = {
+                canvasContext: canvas.getContext("2d"),
+                viewport: viewport,
+              };
+              page.render(renderContext);
+            });
+          })
+          .catch((error) => {
+            console.error("Error loading PDF:", error);
+            const errorMessage = document.createElement("p");
+            errorMessage.textContent = "Failed to load PDF.";
+            pdfContainer.appendChild(errorMessage);
+          });
+      } else {
+        console.warn("PDF data is missing for post:", post);
+        const errorMessage = document.createElement("p");
+        errorMessage.textContent = "PDF data is unavailable.";
+        pdfContainer.appendChild(errorMessage);
+      }
+      window.removeEventListener("scroll", handleInfiniteScroll);
+    })
+    .catch((error) => {
+      console.error("Error loading post detail:", error);
+    });
+}
 
 let handleInfiniteScroll = () => {
   throttle(() => {
@@ -337,98 +395,6 @@ function handleFiles(event) {
   }
 }
 
-
-
-
-
-// async function uploadPost() {
-//   const titleInput = document.getElementById("title");
-//   const title = titleInput.value.trim();
-//   const errorMessageDiv = document.getElementById("errorMessage");
-//   const successMessageDiv = document.getElementById("successMessage");
-
-//   // Clear previous messages
-//   errorMessageDiv.textContent = "";
-//   successMessageDiv.textContent = "";
-
-//   if (!title) {
-//     errorMessageDiv.textContent = "Please enter a title.";
-//     return;
-//   }
-
-//   if (!selectedFile) {
-//     errorMessageDiv.textContent = "Please upload a PDF file.";
-//     return;
-//   }
-
-//   const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
-//   const createdAt = new Date().toISOString();
-
-//   const formData = new FormData();
-//   formData.append("title", title);
-//   formData.append("pdf", selectedFile);
-//   formData.append("created_at", createdAt);
-//   formData.append("user_uuid", userUUID);
-
-//   try {
-//     const response = await fetch("/postss", {
-//       method: "POST",
-//       body: formData,
-//     });
-
-//     if (response.ok) {
-//       titleInput.value = "";
-//       selectedFile = null;
-
-//           const dropArea = document.getElementById("dropArea");
-//           dropArea.textContent = ""; 
-
-//           const label = document.createElement("label");
-//           label.setAttribute("for", "inputPDF");
-//           label.id = "drop-area";
-
-//           const input = document.createElement("input");
-//           input.id = "inputPDF";
-//           input.type = "file";
-//           input.accept = ".pdf";
-//           input.hidden = true;
-
-//           const pdfView = document.createElement("div");
-//           pdfView.id = "pdf-view";
-//           while (pdfView.firstChild) {
-//             pdfView.removeChild(pdfView.firstChild);
-//           }
-
-//           const newParagraph = document.createElement('p');
-//           const textBeforeBr = document.createTextNode('Drag and Drop or Click here');
-//           const newBr = document.createElement('br');
-//           const textAfterBr = document.createTextNode('to upload PDF');
-
-//           newParagraph.appendChild(textBeforeBr);
-//           newParagraph.appendChild(newBr);
-//           newParagraph.appendChild(textAfterBr);
-//           pdfView.appendChild(newParagraph);
-
-//           const newSpan = document.createElement('span');
-//           newSpan.className = 'bottom-text';
-//           newSpan.textContent = 'Upload any PDF from desktop';
-
-//           pdfView.appendChild(newParagraph);
-//           pdfView.appendChild(newSpan);
-//           label.appendChild(input);
-//           label.appendChild(pdfView);
-//           dropArea.appendChild(label);
-//           input.addEventListener("change", handleFiles);
-
-//       successMessageDiv.textContent = "Post uploaded successfully!";
-//     } else {
-//       errorMessageDiv.textContent = "Failed to upload post.";
-//     }
-//   } catch (error) {
-//     errorMessageDiv.textContent = "An error occurred: " + error.message;
-//   }
-// }
-
 async function uploadPost() {
   const titleInput = document.getElementById("title");
   const title = titleInput.value.trim();
@@ -477,7 +443,7 @@ async function uploadPost() {
 
       // Reset the drop area
       const dropArea = document.getElementById("dropArea");
-      dropArea.textContent = ""; 
+      dropArea.textContent = "";
       const label = document.createElement("label");
       label.setAttribute("for", "inputPDF");
       label.id = "drop-area";
@@ -494,19 +460,21 @@ async function uploadPost() {
         pdfView.removeChild(pdfView.firstChild);
       }
 
-      const newParagraph = document.createElement('p');
-      const textBeforeBr = document.createTextNode('Drag and Drop or Click here');
-      const newBr = document.createElement('br');
-      const textAfterBr = document.createTextNode('to upload PDF');
+      const newParagraph = document.createElement("p");
+      const textBeforeBr = document.createTextNode(
+        "Drag and Drop or Click here"
+      );
+      const newBr = document.createElement("br");
+      const textAfterBr = document.createTextNode("to upload PDF");
 
       newParagraph.appendChild(textBeforeBr);
       newParagraph.appendChild(newBr);
       newParagraph.appendChild(textAfterBr);
       pdfView.appendChild(newParagraph);
 
-      const newSpan = document.createElement('span');
-      newSpan.className = 'bottom-text';
-      newSpan.textContent = 'Upload any PDF from desktop';
+      const newSpan = document.createElement("span");
+      newSpan.className = "bottom-text";
+      newSpan.textContent = "Upload any PDF from desktop";
 
       pdfView.appendChild(newParagraph);
       pdfView.appendChild(newSpan);
@@ -525,10 +493,9 @@ async function uploadPost() {
 }
 
 async function processPost(postId) {
-
   try {
     const processResponse = await fetch(`/process/${postId}`, {
-      method: 'POST',
+      method: "POST",
     });
 
     if (processResponse.ok) {
@@ -544,10 +511,10 @@ async function processPost(postId) {
 
 function removePost() {
   selectedFile = null; // Clear the selected file
-  selectedFile = null; 
+  selectedFile = null;
 
   const dropArea = document.getElementById("dropArea");
-  dropArea.textContent = ""; 
+  dropArea.textContent = "";
 
   const label = document.createElement("label");
   label.setAttribute("for", "inputPDF");
@@ -565,19 +532,19 @@ function removePost() {
     pdfView.removeChild(pdfView.firstChild);
   }
 
-  const newParagraph = document.createElement('p');
-  const textBeforeBr = document.createTextNode('Drag and Drop or Click here');
-  const newBr = document.createElement('br');
-  const textAfterBr = document.createTextNode('to upload PDF');
+  const newParagraph = document.createElement("p");
+  const textBeforeBr = document.createTextNode("Drag and Drop or Click here");
+  const newBr = document.createElement("br");
+  const textAfterBr = document.createTextNode("to upload PDF");
 
   newParagraph.appendChild(textBeforeBr);
   newParagraph.appendChild(newBr);
   newParagraph.appendChild(textAfterBr);
   pdfView.appendChild(newParagraph);
 
-  const newSpan = document.createElement('span');
-  newSpan.className = 'bottom-text';
-  newSpan.textContent = 'Upload any PDF from desktop';
+  const newSpan = document.createElement("span");
+  newSpan.className = "bottom-text";
+  newSpan.textContent = "Upload any PDF from desktop";
 
   pdfView.appendChild(newParagraph);
   pdfView.appendChild(newSpan);
