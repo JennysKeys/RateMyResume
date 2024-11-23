@@ -4,6 +4,7 @@ const searchInput = document.getElementById("searchInput");
 const searchButton = document.getElementById("searchButton");
 // Variable to store the current search term
 let currentSearchTerm = "";
+let curr_user = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
 
 function openNav() {
     document.getElementById("mySidenav").style.width = "250px";
@@ -82,6 +83,36 @@ function timeSince(date) {
     return `30+ days ago`;
 }
 
+async function getFollowingList() {
+    let followingIds = [];
+    url = `/get-followers?user_uuid=${curr_user}`;
+    try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(
+                "Network response was not ok " + response.statusText
+            );
+        }
+
+        const body = await response.json();
+        followingIds = body;
+        followingIds = formatFollowingList(followingIds);
+        console.log(followingList);
+        return followingIds;
+    } catch (error) {
+        console.log("Fetch error:", error);
+    }
+}
+
+async function formatFollowingList(followingListBody) {
+    followingList = [];
+    for (let i = 0; i < followingListBody.length; i++) {
+        followingList.push(followingListBody[i].followeduserid);
+    }
+    return followingList;
+}
+
 async function loadPosts(needFilter, filters, followersOnly) {
     try {
         const params = new URLSearchParams({
@@ -91,6 +122,12 @@ async function loadPosts(needFilter, filters, followersOnly) {
         if (currentSearchTerm) {
             params.append("search", currentSearchTerm);
         }
+        if (followersOnly) {
+            let followingList = await getFollowingList();
+            params.append("currentUser", curr_user);
+            params.append("followingIds", followingList.join(","));
+        }
+
         let response;
 
         if (needFilter) {
@@ -100,7 +137,6 @@ async function loadPosts(needFilter, filters, followersOnly) {
             response = await fetch(
                 `http://localhost:3000/filter?${params.toString()}`
             );
-        } else if (followersOnly) {
         } else {
             response = await fetch(
                 `http://localhost:3000/posts?${params.toString()}`
@@ -282,9 +318,8 @@ let removeInfiniteScroll = () => {
 window.onload = function () {
     if (CURRENT_PAGE === HOME_PAGE) {
         loadPosts(false);
-        console.log("currentpage: " + CURRENT_PAGE);
     } else if (CURRENT_PAGE === FOLLOWER_PAGE) {
-        console.log("watt");
+        loadPosts(false, {}, true);
     }
 
     document.getElementById("homeNav").addEventListener("click", function () {
