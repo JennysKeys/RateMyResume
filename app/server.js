@@ -187,7 +187,7 @@ app.get("/posts", async (req, res) => {
 
     try {
         let query = `
-        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf
+        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid
         FROM Posts
         JOIN Users ON Posts.userID = Users.userID
       `;
@@ -365,6 +365,22 @@ app.post("/login", (req, res, next) => {
         });
     })(req, res, next);
 });
+
+app.post('/comments', async (req, res) => {
+    const { comment, postId } = req.body;
+    const userid = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
+  
+    try {
+      const result = await pool.query(
+        'INSERT INTO comments (body, created_at, resumeid, userid) VALUES ($1, CURRENT_TIMESTAMP, $2, $3) RETURNING *',
+        [comment, postId, userid]
+      );
+      res.status(201).json(result.rows[0]); 
+    } catch (error) {
+      console.error("Error saving comment:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
 
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);

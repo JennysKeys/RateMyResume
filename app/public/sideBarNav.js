@@ -254,6 +254,7 @@ async function loadPosts(needFilter, filters) {
     console.error("Error loading posts:", error);
   }
 }
+
 function showPostDetail(post) {
   const mainContainer = document.getElementById("main");
   fetch("postDetail.html")
@@ -265,12 +266,14 @@ function showPostDetail(post) {
       const pdfContainer = document.getElementById("pdf-container");
       const usernameElement = document.getElementById("username");
       const dateElement = document.getElementById("date");
+      const postIdElement = document.getElementById("postId"); 
 
       titleElement.textContent = post.title;
       usernameElement.textContent = post.username;
       dateElement.textContent = timeSince(post.created_at);
+      postIdElement.value = post.postid; 
 
-      //Render the PDF
+      // Render the PDF
       const canvas = document.createElement("canvas");
       canvas.style.width = "100%";
       pdfContainer.appendChild(canvas);
@@ -573,14 +576,36 @@ function cancelComment() {
   document.getElementById('commentTextArea').value = ''; // Clear the textarea
 }
 
-function submitComment() {
-  const comment = document.getElementById('commentTextArea').value;
-  if (comment) {
-      // Here you would typically send the comment to your database
-      console.log("Comment submitted:", comment);
-      // Reset the input fields
-      cancelComment();
-  } else {
-      alert("Please enter a comment before submitting.");
+async function submitComment() {
+  const commentText = document.getElementById('commentTextArea').value;
+  const postId = document.getElementById('postId').value; 
+
+  if (!commentText) {
+    alert("Please enter a comment before submitting.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        postId: postId,
+        comment: commentText,
+      }),
+    });
+
+    if (response.ok) {
+      console.log("Comment submitted successfully.");
+      document.getElementById("commentTextArea").value = ""; 
+      document.getElementById("largeCommentInput").style.display = "none"; 
+      document.getElementById("smallCommentInput").style.display = "block"; 
+    } else {
+      console.error("Failed to submit comment:", response.statusText);
+    }
+  } catch (error) {
+    console.error("Error submitting comment:", error);
   }
 }
