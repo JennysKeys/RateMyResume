@@ -143,6 +143,24 @@ app.get("/filter", async(req, res) => {
     }
 });
 
+app.get("/get-followers", async (req, res) => {
+    const { user_uuid } = req.query;
+    const client = await pool.connect();
+
+    try {
+        const result = await client.query(
+            "SELECT * FROM follows WHERE (followinguserid = $1)",
+            [user_uuid]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error getting followers:", err);
+        res.status(500).json({ message: "Internal server error" });
+    } finally {
+        client.release();
+    }
+});
+
 app.get("/get-messages", async (req, res) => {
     const { senderID, receiverID } = req.query;
     const client = await pool.connect();
