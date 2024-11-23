@@ -560,3 +560,27 @@ function removePost() {
   // Hide the Remove PDF button
   document.getElementById("removeButton").style.display = "none";
 }
+
+
+function expandCommentInput() {
+  document.getElementById('smallCommentInput').style.display = 'none';
+  document.getElementById('largeCommentInput').style.display = 'block';
+}
+
+function cancelComment() {
+  document.getElementById('largeCommentInput').style.display = 'none';
+  document.getElementById('smallCommentInput').style.display = 'block';
+  document.getElementById('commentTextArea').value = ''; // Clear the textarea
+}
+
+function submitComment() {
+  const comment = document.getElementById('commentTextArea').value;
+  if (comment) {
+      // Here you would typically send the comment to your database
+      console.log("Comment submitted:", comment);
+      // Reset the input fields
+      cancelComment();
+  } else {
+      alert("Please enter a comment before submitting.");
+  }
+}
