@@ -14,6 +14,7 @@ function loginUser(event) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                localStorage.setItem("token", data.token);
                 alert("Login successful!");
             } else {
                 alert("Invalid credentials");

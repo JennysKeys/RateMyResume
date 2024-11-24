@@ -1,4 +1,3 @@
-
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
@@ -10,9 +9,9 @@ const multer = require("multer");
 const app = express();
 
 const port = 3000;
-const jwtSecret = process.env.JWT_SECRET;
 const hostname = "localhost";
 const dotenv = require("dotenv").config();
+const jwtSecret = process.env.JWT_SECRET;
 const cors = require("cors");
 const { Pool } = require("pg");
 
@@ -51,13 +50,13 @@ app.get("/database", async (req, res) => {
     res.status(404);
 });
 
-app.get("/filter", async(req, res) => {
+app.get("/filter", async (req, res) => {
     let startWhere = true;
     const limit = parseInt(req.query.limit) || 2; // Number of posts to load per batch
     const offset = parseInt(req.query.offset) || 0; // Offset to start fetching posts from
     const search = req.query.search || ""; // Get the search term from query parameters
     let schoolString = req.query.schools || "";
-    let schools = schoolString.split(',');
+    let schools = schoolString.split(",");
     let majorString = req.query.majors || "";
     let majors = majorString.split(",");
     let gpaMin = req.query.gpaMin || "";
@@ -87,15 +86,15 @@ app.get("/filter", async(req, res) => {
         // }
 
         if (schoolString) {
-            let firstSchool = true
-            if(!startWhere) {
-                query += ' AND';
+            let firstSchool = true;
+            if (!startWhere) {
+                query += " AND";
             }
-            for(school of schools) {
-                if(!firstSchool) {
-                    query += ' OR';
+            for (school of schools) {
+                if (!firstSchool) {
+                    query += " OR";
                 } else {
-                    query += '('
+                    query += "(";
                 }
                 query += ` LOWER(Posts.school) LIKE $${parmsCount}`;
                 parmsCount++;
@@ -103,19 +102,19 @@ app.get("/filter", async(req, res) => {
                 firstSchool = false;
                 startWhere = false;
             }
-            query += ')'
+            query += ")";
         }
 
         if (majorString) {
-            let firstMajor = true
-            if(!startWhere) {
-                query += ' AND';
+            let firstMajor = true;
+            if (!startWhere) {
+                query += " AND";
             }
-            for(major of majors) {
-                if(!firstMajor) {
-                    query += ' OR';
+            for (major of majors) {
+                if (!firstMajor) {
+                    query += " OR";
                 } else {
-                    query += '('
+                    query += "(";
                 }
                 query += ` LOWER(Posts.major) LIKE $${parmsCount}`;
                 queryParams.push(`%${major.toLowerCase()}%`);
@@ -151,6 +150,24 @@ app.get("/filter", async(req, res) => {
         res.status(500).json({
             error: "An error occurred while fetching filtered posts",
         });
+    }
+});
+
+app.get("/get-followers", async (req, res) => {
+    const { user_uuid } = req.query;
+    const client = await pool.connect();
+
+    try {
+        const result = await client.query(
+            "SELECT * FROM follows WHERE (followinguserid = $1)",
+            [user_uuid]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error getting followers:", err);
+        res.status(500).json({ message: "Internal server error" });
+    } finally {
+        client.release();
     }
 });
 
@@ -195,12 +212,14 @@ app.get("/posts", async (req, res) => {
     const limit = parseInt(req.query.limit) || 2; // Number of posts to load per batch
     const offset = parseInt(req.query.offset) || 0; // Offset to start fetching posts from
     const search = req.query.search || ""; // Get the search term from query parameters
-
+    const currentUser = req.query.currentUser || ""; // Get the search term from query parameters
+    const followingIds = req.query.followingIds || ""; // Get the search term from query parameters
+    console.log("id top" + followingIds);
     try {
         let query = `
-        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf
+        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid
         FROM Posts
-        JOIN Users ON Posts.userID = Users.userID
+        JOIN Users ON Posts.userid = Users.userID
       `;
 
         let queryParams = [];
@@ -209,6 +228,14 @@ app.get("/posts", async (req, res) => {
         if (search) {
             query += ` WHERE LOWER(Users.username) LIKE $1`;
             queryParams.push(`%${search.toLowerCase()}%`);
+        }
+
+        if (currentUser && followingIds) {
+            console.log("current user: " + currentUser);
+            const idArr = followingIds.split(",");
+            console.log("ids: " + idArr);
+            query += `WHERE CAST(Posts.userid AS text) = ANY ($1::text[])`;
+            queryParams.push(idArr);
         }
 
         // Add ORDER BY, LIMIT, and OFFSET clauses
@@ -237,7 +264,9 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
     const pdfBuffer = req.file ? req.file.buffer : null;
 
     if (!title || !pdfBuffer || !user_uuid) {
-        return res.status(400).send("Title, PDF file, and userID are required.");
+        return res
+            .status(400)
+            .send("Title, PDF file, and userID are required.");
     }
 
     try {
@@ -247,7 +276,7 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
         `;
         const values = [title, pdfBuffer, user_uuid];
         const result = await pool.query(query, values);
-        const postId = result.rows[0].postid; 
+        const postId = result.rows[0].postid;
 
         res.status(201).json({ postId });
     } catch (error) {
@@ -271,50 +300,58 @@ app.post("/process/:postId", async (req, res) => {
         }
 
         // Call the external API to process the PDF
-        const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
-        const apiUrl = "https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/";
+        const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+        const apiUrl =
+            "https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/";
         const formData = new FormData();
-        formData.append('Resume', blob, 'Resume.pdf');
+        formData.append("Resume", blob, "Resume.pdf");
 
         const launchExecution = await fetch(apiUrl, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
+                Authorization: `Bearer ${process.env.EDEN_AI_API_KEY}`,
             },
-            body: formData
+            body: formData,
         });
 
         const launchExecutionResults = await launchExecution.json();
         const executionId = launchExecutionResults.id;
 
-        await new Promise(resolve => setTimeout(resolve, 5000)); 
+        await new Promise((resolve) => setTimeout(resolve, 5000));
 
         const getExecutionUrl = `https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/${executionId}/`;
         const getExecution = await fetch(getExecutionUrl, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
+                Authorization: `Bearer ${process.env.EDEN_AI_API_KEY}`,
             },
         });
 
-        await new Promise(resolve => setTimeout(resolve, 10000)); 
+        await new Promise((resolve) => setTimeout(resolve, 10000));
 
         const apiData = await getExecution.json();
-        
+
         console.log(apiData.content.status);
 
-        const pppoopoo = JSON.stringify(apiData.content.results.output, null, 2);
+        const pppoopoo = JSON.stringify(
+            apiData.content.results.output,
+            null,
+            2
+        );
 
         const parsedData = JSON.parse(pppoopoo);
         const extractedData = parsedData.results[0]?.extracted_data;
 
-        const educationSection = extractedData.education.entries[0]
-        const gpa = educationSection.gpa; 
-        const school = educationSection.establishment; 
+        const educationSection = extractedData.education.entries[0];
+        const gpa = educationSection.gpa;
+        const school = educationSection.establishment;
         const major = educationSection.accreditation;
 
-        const companies = extractedData.work_experience?.entries?.map(entry => entry.company) || [];
-        const companiesString = companies.join(', '); 
+        const companies =
+            extractedData.work_experience?.entries?.map(
+                (entry) => entry.company
+            ) || [];
+        const companiesString = companies.join(", ");
 
         const updateQuery = `
             UPDATE Posts
@@ -331,27 +368,46 @@ app.post("/process/:postId", async (req, res) => {
     }
 });
 
-const users = [
-    {
-        username: "testuser",
-        password:
-            "$2a$10$1C0PmG9y2rh9Y1uA2/O69uRhbA8e1zpxrqXXyExIQoZdv5t31/rUW", // bcrypt hashed password for 'testpassword'
-    },
-];
-
 passport.use(
-    new LocalStrategy((username, password, done) => {
-        const user = users.find((u) => u.username === username);
-        if (!user) return done(null, false, { message: "Invalid credentials" });
+    new LocalStrategy(async (username, password, done) => {
+        try {
+            const result = await pool.query(
+                "SELECT username, hash FROM users WHERE username = $1",
+                [username]
+            );
 
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-            if (err) return done(err);
-            if (!isMatch)
+            if (result.rows.length === 0) {
                 return done(null, false, { message: "Invalid credentials" });
+            }
+
+            const user = result.rows[0];
+
+            const isMatch = await bcrypt.compare(password, user.hash);
+            if (!isMatch) {
+                return done(null, false, { message: "Invalid credentials" });
+            }
+
             return done(null, user);
-        });
+        } catch (error) {
+            console.error("Error during authentication:", error);
+            return done(error);
+        }
     })
 );
+
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) return res.status(401).json({ message: "Access denied. Token missing." });
+
+    jwt.verify(token, jwtSecret, (err, user) => {
+        if (err) return res.status(403).json({ message: "Invalid token." });
+        req.user = user; // Attach decoded token payload to request object
+        next();
+    });
+};
+
 app.post("/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
         if (err)
@@ -364,7 +420,7 @@ app.post("/login", (req, res, next) => {
                 .json({ success: false, message: info.message });
 
         const token = jwt.sign(
-            { id: user.id, username: user.username },
+            { userid: user.userid, username: user.username },
             jwtSecret,
             { expiresIn: "1h" }
         );
@@ -375,6 +431,80 @@ app.post("/login", (req, res, next) => {
             token: token,
         });
     })(req, res, next);
+});
+
+app.post('/comments', async (req, res) => {
+    const { comment, postId } = req.body;
+    const userid = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
+  
+    try {
+      const result = await pool.query(
+        'INSERT INTO comments (body, created_at, resumeid, userid) VALUES ($1, CURRENT_TIMESTAMP, $2, $3) RETURNING *',
+        [comment, postId, userid]
+      );
+      res.status(201).json(result.rows[0]); 
+    } catch (error) {
+      console.error("Error saving comment:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
+  app.get('/comments/:postId', async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT c.commentID, c.body, c.created_at, c.resumeID, c.userID, u.username
+             FROM Comments c
+             JOIN Users u ON c.userID = u.userID
+             WHERE c.resumeID = $1
+             ORDER BY c.created_at DESC`,
+            [postId]
+        );
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error fetching comments:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.post("/create-user", async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+    }
+
+    try {
+        // Check if username already exists
+        const userCheck = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+        if (userCheck.rows.length > 0) {
+            return res.status(400).json({ error: "Username already exists" });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Insert into database
+        const result = await pool.query(
+            "INSERT INTO users (username, hash) VALUES ($1, $2) RETURNING *",
+            [username, hashedPassword]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: "User created successfully",
+            user: { id: result.rows[0].id, username: result.rows[0].username },
+        });
+    } catch (error) {
+        console.error("Error creating user:", error);
+        res.status(500).json({ error: "An error occurred while creating the user" });
+    }
+});
+
+app.use("/test-authenticate-token", authenticateToken);
+app.get("/test-authenticate-token", (req, res) => {
+    res.json({ message: "You have access to /test-authenticate-token!", user: req.user });
 });
 
 app.listen(port, hostname, () => {
