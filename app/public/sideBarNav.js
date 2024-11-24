@@ -331,6 +331,8 @@ let removeInfiniteScroll = () => {
 
 window.onload = function () {
   loadPosts(false);
+  slideOne();
+  slideTwo();
 };
 
 window.addEventListener("scroll", handleInfiniteScroll);

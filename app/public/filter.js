@@ -37,11 +37,6 @@ function filter(event) {
     offset = 0;
     loadPosts(true, filters);
 }
-
-window.onload = function () {
-    slideOne();
-    slideTwo();
-  };
   
   function slideOne() {
     if (parseFloat(sliderTwo.value) - parseFloat(sliderOne.value) <= minGap) {
