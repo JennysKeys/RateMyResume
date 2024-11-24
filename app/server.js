@@ -454,6 +454,10 @@ app.post("/create-user", async (req, res) => {
     }
 });
 
+app.use("/test-authenticate-token", authenticateToken);
+app.get("/test-authenticate-token", (req, res) => {
+    res.json({ message: "You have access to /test-authenticate-token!", user: req.user });
+});
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
     startWebSocketServer();
