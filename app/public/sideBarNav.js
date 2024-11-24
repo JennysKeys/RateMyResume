@@ -672,9 +672,9 @@ async function submitComment() {
       const existingCommentsResponse = await fetch(`/comments/${postId}`);
       const existingComments = await existingCommentsResponse.json();
 
-      const allComments = [...existingComments, newComment];
+      // const allComments = [...existingComments, newComment];
 
-      displayComments(allComments);
+      displayComments(existingComments);
     } else {
       console.error("Failed to submit comment:", response.statusText);
     }
