@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/postDetail.css" />
+  </head>
+  <body>
+    <div class="post-detail">
+      <div class="header-container">
+        <input type="hidden" id="postId" value="" />
+        <div id="username"></div>
+        <div id="dot">•</div>
+        <div id="date"></div>
+      </div>
+      <div>
+        <h1 id="post-title"></h1>
+      </div>
+      <div class="pdf" id="pdf-container"></div>
+    </div>
+
+        <!-- comments -->
+
+        <div class="comment-container">
+          <div class="small-comment-input" id="smallCommentInput" onclick="expandCommentInput()">
+              <input type="text" id="commentInput" placeholder="Add a comment..." readonly />
+          </div>
+          <div class="large-comment-input" id="largeCommentInput" style="display: none;">
+              <textarea id="commentTextArea" placeholder="Write your comment here..."></textarea>
+              <div class="comment-buttons">
+                  <button id="cancelButton" onclick="cancelComment()">Cancel</button>
+                  <button id="submitButton" onclick="submitComment()">Comment</button>
+              </div>
+          </div>
+      </div>
+  
+      <div class="comments-section" id="commentsSection">
+          <div class="comment">
+              <div class="comment-header">
+                  <span class="username">Username</span>
+                  <span class="timestamp">5 minutes ago</span>
+              </div>
+              <div class="comment-body">
+                  This is a sample comment.
+              </div>
+              <div class="comment-buttons">
+                  <!-- <button onclick="replyToComment()">Reply</button>
+                  <button onclick="deleteComment()">Delete</button> -->
+              </div>
+          </div>
+      </div>
+      <script src="sideBarNav.js"></script>
+
+    
+  </body>
+</html>

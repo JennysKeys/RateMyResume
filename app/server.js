@@ -206,7 +206,7 @@ app.get("/posts", async (req, res) => {
     console.log("id top" + followingIds);
     try {
         let query = `
-        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf
+        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid
         FROM Posts
         JOIN Users ON Posts.userid = Users.userID
       `;
@@ -401,6 +401,41 @@ app.post("/login", (req, res, next) => {
             token: token,
         });
     })(req, res, next);
+});
+
+app.post('/comments', async (req, res) => {
+    const { comment, postId } = req.body;
+    const userid = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
+  
+    try {
+      const result = await pool.query(
+        'INSERT INTO comments (body, created_at, resumeid, userid) VALUES ($1, CURRENT_TIMESTAMP, $2, $3) RETURNING *',
+        [comment, postId, userid]
+      );
+      res.status(201).json(result.rows[0]); 
+    } catch (error) {
+      console.error("Error saving comment:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
+  app.get('/comments/:postId', async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT c.commentID, c.body, c.created_at, c.resumeID, c.userID, u.username
+             FROM Comments c
+             JOIN Users u ON c.userID = u.userID
+             WHERE c.resumeID = $1
+             ORDER BY c.created_at DESC`,
+            [postId]
+        );
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error fetching comments:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 app.listen(port, hostname, () => {

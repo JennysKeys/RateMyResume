@@ -168,6 +168,10 @@ async function loadPosts(needFilter, filters, followersOnly) {
             const card = document.createElement("div");
             card.className = "card";
 
+            card.addEventListener("click", () => {
+                showPostDetail(post);
+            });
+
             // Header div for username and date
             const headerContainer = document.createElement("div");
             headerContainer.className = "card-header";
@@ -298,6 +302,132 @@ async function loadPosts(needFilter, filters, followersOnly) {
     }
 }
 
+async function showPostDetail(post) {
+    const mainContainer = document.getElementById("main");
+    fetch("postDetail.html")
+        .then((response) => response.text())
+        .then(async (html) => {
+            mainContainer.innerHTML = html;
+
+            const titleElement = document.getElementById("post-title");
+            const pdfContainer = document.getElementById("pdf-container");
+            const usernameElement = document.getElementById("username");
+            const dateElement = document.getElementById("date");
+            const postIdElement = document.getElementById("postId");
+
+            titleElement.textContent = post.title;
+            usernameElement.textContent = post.username;
+            dateElement.textContent = timeSince(post.created_at);
+            postIdElement.value = post.postid;
+
+            const comments = await fetchComments(post.postid);
+            displayComments(comments);
+
+            // Render the PDF
+            const canvas = document.createElement("canvas");
+            canvas.style.width = "100%";
+            pdfContainer.appendChild(canvas);
+
+            if (post.pdf && post.pdf.data) {
+                const loadingTask = pdfjsLib.getDocument({
+                    data: post.pdf.data,
+                });
+                loadingTask.promise
+                    .then((pdf) => {
+                        pdf.getPage(1).then((page) => {
+                            const viewport = page.getViewport({ scale: 1 });
+
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+
+                            const renderContext = {
+                                canvasContext: canvas.getContext("2d"),
+                                viewport: viewport,
+                            };
+                            page.render(renderContext);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error("Error loading PDF:", error);
+                        const errorMessage = document.createElement("p");
+                        errorMessage.textContent = "Failed to load PDF.";
+                        pdfContainer.appendChild(errorMessage);
+                    });
+            } else {
+                console.warn("PDF data is missing for post:", post);
+                const errorMessage = document.createElement("p");
+                errorMessage.textContent = "PDF data is unavailable.";
+                pdfContainer.appendChild(errorMessage);
+            }
+            window.removeEventListener("scroll", handleInfiniteScroll);
+        })
+        .catch((error) => {
+            console.error("Error loading post detail:", error);
+        });
+}
+
+function displayComments(comments) {
+    const commentsSection = document.getElementById("commentsSection");
+    commentsSection.innerHTML = ""; // Clear existing comments
+
+    // Sort comments by created_at date (newest first)
+    comments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    comments.forEach((comment) => {
+        // Create the main comment div
+        const commentDiv = document.createElement("div");
+        commentDiv.className = "comment";
+
+        // Create the comment header
+        const commentHeader = document.createElement("div");
+        commentHeader.className = "comment-header";
+
+        // Create and append username
+        const usernameSpan = document.createElement("span");
+        usernameSpan.className = "username";
+        usernameSpan.textContent = comment.username;
+        commentHeader.appendChild(usernameSpan);
+
+        // Create and append timestamp
+        const timestampSpan = document.createElement("span");
+        timestampSpan.className = "timestamp";
+        timestampSpan.textContent = timeSince(comment.created_at);
+        commentHeader.appendChild(timestampSpan);
+
+        // Create and append the comment body
+        const commentBody = document.createElement("div");
+        commentBody.className = "comment-body";
+        commentBody.textContent = comment.body;
+
+        // Create comment buttons container
+        const commentButtons = document.createElement("div");
+        commentButtons.className = "comment-buttons";
+        // Add buttons for reply or delete if needed (you can create buttons here)
+
+        // Append all parts to the main comment div
+        commentDiv.appendChild(commentHeader);
+        commentDiv.appendChild(commentBody);
+        commentDiv.appendChild(commentButtons);
+
+        // Finally, append the comment div to the comments section
+        commentsSection.appendChild(commentDiv);
+    });
+}
+
+async function fetchComments(postId) {
+    try {
+        const response = await fetch(`/comments/${postId}`);
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+        const comments = await response.json();
+        return comments;
+    } catch (error) {
+        console.error("Error fetching comments:", error);
+        return []; // Return an empty array on error
+    }
+}
+
 let handleInfiniteScroll = () => {
     throttle(() => {
         let endOfPage =
@@ -400,94 +530,6 @@ function handleFiles(event) {
         }
     }
 }
-
-// async function uploadPost() {
-//   const titleInput = document.getElementById("title");
-//   const title = titleInput.value.trim();
-//   const errorMessageDiv = document.getElementById("errorMessage");
-//   const successMessageDiv = document.getElementById("successMessage");
-
-//   // Clear previous messages
-//   errorMessageDiv.textContent = "";
-//   successMessageDiv.textContent = "";
-
-//   if (!title) {
-//     errorMessageDiv.textContent = "Please enter a title.";
-//     return;
-//   }
-
-//   if (!selectedFile) {
-//     errorMessageDiv.textContent = "Please upload a PDF file.";
-//     return;
-//   }
-
-//   const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
-//   const createdAt = new Date().toISOString();
-
-//   const formData = new FormData();
-//   formData.append("title", title);
-//   formData.append("pdf", selectedFile);
-//   formData.append("created_at", createdAt);
-//   formData.append("user_uuid", userUUID);
-
-//   try {
-//     const response = await fetch("/postss", {
-//       method: "POST",
-//       body: formData,
-//     });
-
-//     if (response.ok) {
-//       titleInput.value = "";
-//       selectedFile = null;
-
-//           const dropArea = document.getElementById("dropArea");
-//           dropArea.textContent = "";
-
-//           const label = document.createElement("label");
-//           label.setAttribute("for", "inputPDF");
-//           label.id = "drop-area";
-
-//           const input = document.createElement("input");
-//           input.id = "inputPDF";
-//           input.type = "file";
-//           input.accept = ".pdf";
-//           input.hidden = true;
-
-//           const pdfView = document.createElement("div");
-//           pdfView.id = "pdf-view";
-//           while (pdfView.firstChild) {
-//             pdfView.removeChild(pdfView.firstChild);
-//           }
-
-//           const newParagraph = document.createElement('p');
-//           const textBeforeBr = document.createTextNode('Drag and Drop or Click here');
-//           const newBr = document.createElement('br');
-//           const textAfterBr = document.createTextNode('to upload PDF');
-
-//           newParagraph.appendChild(textBeforeBr);
-//           newParagraph.appendChild(newBr);
-//           newParagraph.appendChild(textAfterBr);
-//           pdfView.appendChild(newParagraph);
-
-//           const newSpan = document.createElement('span');
-//           newSpan.className = 'bottom-text';
-//           newSpan.textContent = 'Upload any PDF from desktop';
-
-//           pdfView.appendChild(newParagraph);
-//           pdfView.appendChild(newSpan);
-//           label.appendChild(input);
-//           label.appendChild(pdfView);
-//           dropArea.appendChild(label);
-//           input.addEventListener("change", handleFiles);
-
-//       successMessageDiv.textContent = "Post uploaded successfully!";
-//     } else {
-//       errorMessageDiv.textContent = "Failed to upload post.";
-//     }
-//   } catch (error) {
-//     errorMessageDiv.textContent = "An error occurred: " + error.message;
-//   }
-// }
 
 async function uploadPost() {
     const titleInput = document.getElementById("title");
@@ -653,4 +695,58 @@ function removePost() {
 
     // Hide the Remove PDF button
     document.getElementById("removeButton").style.display = "none";
+}
+
+function expandCommentInput() {
+    document.getElementById("smallCommentInput").style.display = "none";
+    document.getElementById("largeCommentInput").style.display = "block";
+}
+
+function cancelComment() {
+    document.getElementById("largeCommentInput").style.display = "none";
+    document.getElementById("smallCommentInput").style.display = "block";
+    document.getElementById("commentTextArea").value = ""; // Clear the textarea
+}
+async function submitComment() {
+    const commentText = document.getElementById("commentTextArea").value;
+    const postId = document.getElementById("postId").value;
+
+    if (!commentText) {
+        alert("Please enter a comment before submitting.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/comments`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                postId: postId,
+                comment: commentText,
+            }),
+        });
+
+        if (response.ok) {
+            console.log("Comment submitted successfully.");
+            const newComment = await response.json();
+
+            document.getElementById("commentTextArea").value = "";
+            document.getElementById("largeCommentInput").style.display = "none";
+            document.getElementById("smallCommentInput").style.display =
+                "block";
+
+            const existingCommentsResponse = await fetch(`/comments/${postId}`);
+            const existingComments = await existingCommentsResponse.json();
+
+            // const allComments = [...existingComments, newComment];
+
+            displayComments(existingComments);
+        } else {
+            console.error("Failed to submit comment:", response.statusText);
+        }
+    } catch (error) {
+        console.error("Error submitting comment:", error);
+    }
 }
