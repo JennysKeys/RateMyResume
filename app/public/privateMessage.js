@@ -43,6 +43,8 @@ async function getFollowers() {
     const url = "/database";
     let followers = [];
 
+    let followingList = await getFollowingList();
+
     try {
         const response = await fetch(url);
         console.log("Received response headers");
@@ -54,7 +56,10 @@ async function getFollowers() {
         const body = await response.json();
 
         for (let i = 0; i < body.length; i++) {
-            if (body[i].userid !== current_user) {
+            if (
+                body[i].userid !== current_user &&
+                followingList.includes(body[i].userid)
+            ) {
                 followers.push(body[i]);
             }
         }

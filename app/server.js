@@ -1,4 +1,3 @@
-
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
@@ -51,13 +50,13 @@ app.get("/database", async (req, res) => {
     res.status(404);
 });
 
-app.get("/filter", async(req, res) => {
+app.get("/filter", async (req, res) => {
     let startWhere = true;
     const limit = parseInt(req.query.limit) || 2; // Number of posts to load per batch
     const offset = parseInt(req.query.offset) || 0; // Offset to start fetching posts from
     const search = req.query.search || ""; // Get the search term from query parameters
     let schoolString = req.query.schools || "";
-    let schools = schoolString.split(',');
+    let schools = schoolString.split(",");
     let majorString = req.query.majors || "";
     let majors = majorString.split(",");
 
@@ -72,7 +71,7 @@ app.get("/filter", async(req, res) => {
         let queryParams = [];
         let parmsCount = 1;
 
-        if(search || schoolString || majorString) {
+        if (search || schoolString || majorString) {
             query += ` WHERE`;
         }
 
@@ -85,15 +84,15 @@ app.get("/filter", async(req, res) => {
         // }
 
         if (schoolString) {
-            let firstSchool = true
-            if(!startWhere) {
-                query += ' AND';
+            let firstSchool = true;
+            if (!startWhere) {
+                query += " AND";
             }
-            for(school of schools) {
-                if(!firstSchool) {
-                    query += ' OR';
+            for (school of schools) {
+                if (!firstSchool) {
+                    query += " OR";
                 } else {
-                    query += '('
+                    query += "(";
                 }
                 query += ` LOWER(Posts.school) LIKE $${parmsCount}`;
                 parmsCount++;
@@ -101,19 +100,19 @@ app.get("/filter", async(req, res) => {
                 firstSchool = false;
                 startWhere = false;
             }
-            query += ')'
+            query += ")";
         }
 
         if (majorString) {
-            let firstMajor = true
-            if(!startWhere) {
-                query += ' AND';
+            let firstMajor = true;
+            if (!startWhere) {
+                query += " AND";
             }
-            for(major of majors) {
-                if(!firstMajor) {
-                    query += ' OR';
+            for (major of majors) {
+                if (!firstMajor) {
+                    query += " OR";
                 } else {
-                    query += '('
+                    query += "(";
                 }
                 query += ` LOWER(Posts.major) LIKE $${parmsCount}`;
                 queryParams.push(`%${major.toLowerCase()}%`);
@@ -121,7 +120,7 @@ app.get("/filter", async(req, res) => {
                 firstMajor = false;
                 startWhere = false;
             }
-            query += ')'
+            query += ")";
         }
 
         // Add ORDER BY, LIMIT, and OFFSET clauses
@@ -140,6 +139,24 @@ app.get("/filter", async(req, res) => {
         res.status(500).json({
             error: "An error occurred while fetching filtered posts",
         });
+    }
+});
+
+app.get("/get-followers", async (req, res) => {
+    const { user_uuid } = req.query;
+    const client = await pool.connect();
+
+    try {
+        const result = await client.query(
+            "SELECT * FROM follows WHERE (followinguserid = $1)",
+            [user_uuid]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error getting followers:", err);
+        res.status(500).json({ message: "Internal server error" });
+    } finally {
+        client.release();
     }
 });
 
@@ -184,12 +201,14 @@ app.get("/posts", async (req, res) => {
     const limit = parseInt(req.query.limit) || 2; // Number of posts to load per batch
     const offset = parseInt(req.query.offset) || 0; // Offset to start fetching posts from
     const search = req.query.search || ""; // Get the search term from query parameters
-
+    const currentUser = req.query.currentUser || ""; // Get the search term from query parameters
+    const followingIds = req.query.followingIds || ""; // Get the search term from query parameters
+    console.log("id top" + followingIds);
     try {
         let query = `
         SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid
         FROM Posts
-        JOIN Users ON Posts.userID = Users.userID
+        JOIN Users ON Posts.userid = Users.userID
       `;
 
         let queryParams = [];
@@ -198,6 +217,14 @@ app.get("/posts", async (req, res) => {
         if (search) {
             query += ` WHERE LOWER(Users.username) LIKE $1`;
             queryParams.push(`%${search.toLowerCase()}%`);
+        }
+
+        if (currentUser && followingIds) {
+            console.log("current user: " + currentUser);
+            const idArr = followingIds.split(",");
+            console.log("ids: " + idArr);
+            query += `WHERE CAST(Posts.userid AS text) = ANY ($1::text[])`;
+            queryParams.push(idArr);
         }
 
         // Add ORDER BY, LIMIT, and OFFSET clauses
@@ -226,7 +253,9 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
     const pdfBuffer = req.file ? req.file.buffer : null;
 
     if (!title || !pdfBuffer || !user_uuid) {
-        return res.status(400).send("Title, PDF file, and userID are required.");
+        return res
+            .status(400)
+            .send("Title, PDF file, and userID are required.");
     }
 
     try {
@@ -236,7 +265,7 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
         `;
         const values = [title, pdfBuffer, user_uuid];
         const result = await pool.query(query, values);
-        const postId = result.rows[0].postid; 
+        const postId = result.rows[0].postid;
 
         res.status(201).json({ postId });
     } catch (error) {
@@ -260,50 +289,58 @@ app.post("/process/:postId", async (req, res) => {
         }
 
         // Call the external API to process the PDF
-        const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
-        const apiUrl = "https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/";
+        const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+        const apiUrl =
+            "https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/";
         const formData = new FormData();
-        formData.append('Resume', blob, 'Resume.pdf');
+        formData.append("Resume", blob, "Resume.pdf");
 
         const launchExecution = await fetch(apiUrl, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
+                Authorization: `Bearer ${process.env.EDEN_AI_API_KEY}`,
             },
-            body: formData
+            body: formData,
         });
 
         const launchExecutionResults = await launchExecution.json();
         const executionId = launchExecutionResults.id;
 
-        await new Promise(resolve => setTimeout(resolve, 5000)); 
+        await new Promise((resolve) => setTimeout(resolve, 5000));
 
         const getExecutionUrl = `https://api.edenai.run/v2/workflow/e7035afa-c5fb-4e7e-ad0c-e41fc827e261/execution/${executionId}/`;
         const getExecution = await fetch(getExecutionUrl, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env.EDEN_AI_API_KEY}`
+                Authorization: `Bearer ${process.env.EDEN_AI_API_KEY}`,
             },
         });
 
-        await new Promise(resolve => setTimeout(resolve, 10000)); 
+        await new Promise((resolve) => setTimeout(resolve, 10000));
 
         const apiData = await getExecution.json();
-        
+
         console.log(apiData.content.status);
 
-        const pppoopoo = JSON.stringify(apiData.content.results.output, null, 2);
+        const pppoopoo = JSON.stringify(
+            apiData.content.results.output,
+            null,
+            2
+        );
 
         const parsedData = JSON.parse(pppoopoo);
         const extractedData = parsedData.results[0]?.extracted_data;
 
-        const educationSection = extractedData.education.entries[0]
-        const gpa = educationSection.gpa; 
-        const school = educationSection.establishment; 
+        const educationSection = extractedData.education.entries[0];
+        const gpa = educationSection.gpa;
+        const school = educationSection.establishment;
         const major = educationSection.accreditation;
 
-        const companies = extractedData.work_experience?.entries?.map(entry => entry.company) || [];
-        const companiesString = companies.join(', '); 
+        const companies =
+            extractedData.work_experience?.entries?.map(
+                (entry) => entry.company
+            ) || [];
+        const companiesString = companies.join(", ");
 
         const updateQuery = `
             UPDATE Posts
@@ -458,6 +495,7 @@ app.use("/test-authenticate-token", authenticateToken);
 app.get("/test-authenticate-token", (req, res) => {
     res.json({ message: "You have access to /test-authenticate-token!", user: req.user });
 });
+
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
     startWebSocketServer();
