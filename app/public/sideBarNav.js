@@ -465,6 +465,8 @@ window.onload = function () {
             localStorage.setItem("currentPage", FOLLOWER_PAGE);
             window.location.reload();
         });
+  slideOne();
+  slideTwo();
 };
 
 window.addEventListener("scroll", handleInfiniteScroll);
