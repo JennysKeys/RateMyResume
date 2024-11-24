@@ -59,19 +59,21 @@ app.get("/filter", async (req, res) => {
     let schools = schoolString.split(",");
     let majorString = req.query.majors || "";
     let majors = majorString.split(",");
+    let gpaMin = req.query.gpaMin || "";
+    let gpaMax = req.query.gpaMax || "";
 
     console.log(schools);
 
     try {
         let query = `
-        SELECT Posts.title, Posts.created_at, Posts.school, Posts.major, Posts.pdf
+        SELECT Posts.title, Posts.created_at, Posts.school, Posts.major, Posts.gpa, Posts.pdf
         FROM Posts
       `;
 
         let queryParams = [];
         let parmsCount = 1;
 
-        if (search || schoolString || majorString) {
+        if(search || schoolString || majorString || gpaMin) {
             query += ` WHERE`;
         }
 
@@ -120,7 +122,15 @@ app.get("/filter", async (req, res) => {
                 firstMajor = false;
                 startWhere = false;
             }
-            query += ")";
+            query += ')'
+        }
+
+        if(gpaMin) {
+            if(!startWhere) {
+                query += ' AND';
+            }
+            
+            query += ` (Posts.gpa >= ${gpaMin} AND Posts.gpa <= ${gpaMax})`;
         }
 
         // Add ORDER BY, LIMIT, and OFFSET clauses
@@ -130,6 +140,7 @@ app.get("/filter", async (req, res) => {
       `;
         queryParams.push(limit, offset);
 
+        console.log(gpaMin);
         console.log(query);
         console.log(queryParams);
         const result = await pool.query(query, queryParams);

@@ -130,18 +130,19 @@ async function loadPosts(needFilter, filters, followersOnly) {
 
         let response;
 
-        if (needFilter) {
-            params.append("schools", filters.schools);
-            params.append("gpas", filters.gpas);
-            params.append("majors", filters.majors);
-            response = await fetch(
-                `http://localhost:3000/filter?${params.toString()}`
-            );
-        } else {
-            response = await fetch(
-                `http://localhost:3000/posts?${params.toString()}`
-            );
-        }
+    if (needFilter) {
+      params.append("schools", filters.schools);
+      params.append("gpaMin", filters.gpaMin);
+      params.append("gpaMax", filters.gpaMax);
+      params.append("majors", filters.majors);
+      response = await fetch(
+        `http://localhost:3000/filter?${params.toString()}`
+      );
+    } else {
+      response = await fetch(
+        `http://localhost:3000/posts?${params.toString()}`
+      );
+    }
 
         const posts = await response.json();
         console.log(posts.length, offset, limit);

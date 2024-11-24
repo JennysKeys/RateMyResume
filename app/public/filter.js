@@ -13,8 +13,9 @@ function filter(event) {
   let inputs = form.getElementsByTagName("input");
   let checked = [];
   let schools = [];
-  let gpas = [];
   let majors = [];
+  let gpaMin = sliderOne.value;
+  let gpaMax = sliderTwo.value;
 
     for(let i of inputs) {
         if(i.type == "checkbox") {
@@ -31,7 +32,8 @@ function filter(event) {
         }
         
     }
-    let filters = {schools, gpas, majors};
+    console.log(gpaMin, gpaMax);
+    let filters = {schools, majors, gpaMin, gpaMax};
     offset = 0;
     loadPosts(true, filters);
 }
