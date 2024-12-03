@@ -8,7 +8,7 @@ const multer = require("multer");
 
 const app = express();
 
-const port = process.env.PORT || 3000;;
+const port = parseInt(process.env.PORT) || 8080;
 const hostname = "localhost";
 const dotenv = require("dotenv").config();
 const jwtSecret = process.env.JWT_SECRET;
