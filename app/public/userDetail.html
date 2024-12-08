@@ -20,17 +20,30 @@
         />
     </head>
     <body>
-        <div class="user-detail">
-            <h2 id="user-name"></h2>
-            <button id="follow-button">Follow</button>
-        </div>
-
-        <div id="main" class="main-content">
-            <div id="card-container2"></div>
-            <div id="loader">
-                <div class="skeleton-card"></div>
+        <div class="container">
+            <div class="user-detail">
+                <h2 id="user-name"></h2>
             </div>
-            <div class="card-actions"></div>
+
+            <div id="main" class="main-content">
+                <div id="card-container2" class="card-container"></div>
+                <div id="loader">
+                    <div class="skeleton-card"></div>
+                </div>
+                <div class="card-actions"></div>
+            </div>
+
+            <!-- New Floating Box Div -->
+            <div class="floating-box">
+                <div class="user-info">
+                    <h3 id="floating-user-name">User Name</h3>
+                </div>
+
+                <div class="button-container">
+                    <button id="chat-button" class="chat-button">Chat</button>
+                    <button id="follow-button" class="follow-button">Follow</button>
+                </div>
+            </div>
         </div>
     </body>
 </html>
