@@ -1,3 +1,4 @@
+
 let current_user = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
 let current_receiver = "";
 const messageContainer = document.getElementById("message-container");
@@ -7,7 +8,7 @@ let idToUserName = {
 };
 
 const ws = new WebSocket(
-    "ws://localhost:3001/?userID=" + encodeURIComponent(current_user)
+    `wss://${hostname}:443/?userID=` + encodeURIComponent(current_user)
 );
 
 ws.onopen = (event) => {
