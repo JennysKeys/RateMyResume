@@ -1,3 +1,60 @@
 .user-detail {
-  margin-left: 120px;
+  margin-left: 120px; /* Reduce the left margin */
+}
+
+.floating-box {
+  position: fixed; /* Make the box float */
+  right: 20px; /* Position it 20px from the right */
+  top: 10%; /* Position it 10% from the top */
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  width: 200px; /* Adjust the width as needed */
+  height: 700px; /* Adjust the height as needed */
+  display: flex; /* Make the box a flex container */
+  flex-direction: column; /* Arrange items in a column */
+  align-items: flex-start; /* Align items to the start horizontally */
+  justify-content: flex-start; /* Align items to the start vertically */
+}
+
+.user-info {
+  text-align: left;
+  width: 100%; /* Ensure it takes full width */
+}
+
+.chat-button {
+  height: 30px;
+  width: auto;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.chat-button:hover {
+  background-color: #218838;
+}
+
+.follow-button {
+  height: 30px;
+  width: auto;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.follow-button:hover {
+  background-color: #0056b3;
+}
+
+.likes {
+  width: 100%;
+  border-top: 1px solid #ddd; /* Add a border line */
+  margin-top: 10px; /* Add some space above the border */
+  padding-top: 10px; /* Add some space below the border */
+  text-align: center; /* Center the text */
 }

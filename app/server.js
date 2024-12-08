@@ -174,6 +174,7 @@ app.get("/get-followers", async (req, res) => {
 app.get("/get-messages", async (req, res) => {
     const { senderID, receiverID } = req.query;
     const client = await pool.connect();
+
     try {
         const result = await client.query(
             "SELECT * FROM messages WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1) ORDER BY sent_at ASC",
@@ -530,6 +531,44 @@ app.get("/current-user", (req, res) => {
     res.send(req.user.username);
 });
 
+app.post('/follow', async (req, res) => {
+    const client = await pool.connect();
+
+    const { action, following_username, followed_username } = req.body;
+
+    try {
+        // Get the UUIDs of the users from the Users table
+        const getUserUUID = async (username) => {
+            const query = 'SELECT userID FROM Users WHERE username = $1';
+            const values = [username];
+            const result = await client.query(query, values);
+            return result.rows[0].userid;
+        };
+
+        const followed_user_id = await getUserUUID(followed_username);
+        const following_user_id = '49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d'
+
+        if (action === 'follow') {
+            const query = `
+                INSERT INTO Follows (created_at, followingUserID, followedUserID)
+                VALUES (NOW(), $1, $2)
+            `;
+            const values = [following_user_id, followed_user_id];
+            await client.query(query, values);
+        } else if (action === 'unfollow') {
+            const query = `
+                DELETE FROM Follows
+                WHERE followingUserID = $1 AND followedUserID = $2
+            `;
+            const values = [following_user_id, followed_user_id];
+            await client.query(query, values);
+        }
+        res.status(200).send('Success');
+    } catch (err) {
+        console.error('Error updating follow status:', err);
+        res.status(500).send('Error');
+    }
+});
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
     startWebSocketServer();
