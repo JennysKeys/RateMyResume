@@ -402,10 +402,31 @@ async function showUserDetail(username, userid) {
         loadPosts(false, {}, false, userid);
 
         const followButton = document.getElementById("follow-button");
-        followButton.addEventListener("click", () => {
-            // For now, just log a message
-            // Later, you can implement follow logic (e.g., send a request to the server)
-            console.log(`Follow button clicked for user: ${username}`);
+        followButton.addEventListener("click", async () => {
+            const action = followButton.innerHTML === 'Follow' ? 'follow' : 'unfollow';
+            const response = await fetch('/follow', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: action,
+                    followed_username: username
+                })
+            });
+
+            if (response.ok) {
+                if (action === 'follow') {
+                    followButton.innerHTML = 'Unfollow';
+                    followButton.style.backgroundColor = 'gray';
+                } else {
+                    followButton.innerHTML = 'Follow';
+                    followButton.style.backgroundColor = '';
+                }
+                console.log(`Follow button clicked for user: ${username}`);
+            } else {
+                console.error('Failed to update follow status');
+            }
         });
     } catch (error) {
         console.error("Error loading user detail:", error);
