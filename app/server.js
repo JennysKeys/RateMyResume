@@ -41,14 +41,14 @@ const pool = new Pool({
 });
 
 app.get("/database", async (req, res) => {
-    console.log("connected");
+    //console.log("connected");
     const client = await pool.connect();
     try {
         const result = await pool.query("SELECT * FROM users");
-        console.log(result.rows);
+        //console.log(result.rows);
         res.json(result.rows);
     } catch (error) {
-        console.log(error);
+        //console.log(error);
     } finally {
         client.release();
     }
@@ -67,7 +67,7 @@ app.get("/filter", async (req, res) => {
     let gpaMin = req.query.gpaMin || "";
     let gpaMax = req.query.gpaMax || "";
 
-    console.log(schools);
+    //console.log(schools);
 
     try {
         let query = `
@@ -145,9 +145,9 @@ app.get("/filter", async (req, res) => {
       `;
         queryParams.push(limit, offset);
 
-        console.log(gpaMin);
-        console.log(query);
-        console.log(queryParams);
+        //console.log(gpaMin);
+        //console.log(query);
+        //console.log(queryParams);
         const result = await pool.query(query, queryParams);
         res.json(result.rows);
     } catch (error) {
@@ -185,7 +185,7 @@ app.get("/get-messages", async (req, res) => {
             "SELECT * FROM messages WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1) ORDER BY sent_at ASC",
             [senderID, receiverID]
         );
-        console.log("Query result:", result.rows);
+        //console.log("Query result:", result.rows);
         res.json(result.rows);
     } catch (err) {
         console.error("Error getting messages:", err);
@@ -224,7 +224,7 @@ app.get("/posts", async (req, res) => {
     const followingIds = req.query.followingIds || ""; // Get the search term from query parameters
     const viewersIds = req.query.viewersIds || ""; // Get the search term from query parameters
 
-    console.log("id top" + followingIds);
+    //console.log("id top" + followingIds);
     try {
         let query = `
         SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid, Posts.userid, Posts.friends_only
@@ -244,7 +244,7 @@ app.get("/posts", async (req, res) => {
         if (currentUser_followers) {
             if (followingIds.length > 0) {
                 const idArr = followingIds.split(",");
-                console.log("ids: " + idArr);
+                //console.log("ids: " + idArr);
                 whereConditions.push(
                     `CAST(Posts.userid AS text) = ANY ($1::text[])`
                 );
@@ -254,15 +254,15 @@ app.get("/posts", async (req, res) => {
             }
         }
         if (currentPostUserName) {
-            console.log("HELLO");
-            console.log("loading posts for: " + currentPostUserName);
+            //console.log("HELLO");
+            //console.log("loading posts for: " + currentPostUserName);
             whereConditions.push(`Posts.userid = $1`);
             queryParams.push(currentPostUserName);
         }
 
         if (currentUser) {
             if (viewersIds.length > 0) {
-                console.log("checking in here");
+                //console.log("checking in here");
                 const viewersArr = viewersIds.split(",");
 
                 if (currentUser_followers) {
@@ -307,10 +307,10 @@ app.get("/posts", async (req, res) => {
       `;
         queryParams.push(limit, offset);
 
-        console.log("SEARCH: ", query);
-        console.log(queryParams);
+        //console.log("SEARCH: ", query);
+        //console.log(queryParams);
         const result = await pool.query(query, queryParams);
-        console.log(result.rows);
+        //console.log(result.rows);
         res.json(result.rows);
     } catch (error) {
         console.error("Error fetching posts:", error);
@@ -351,7 +351,7 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
 app.post("/process/:postId", async (req, res) => {
     const { postId } = req.params;
 
-    console.log(postId);
+    //console.log(postId);
     try {
         // Fetch the PDF from the database using postId
         const query = `SELECT pdf FROM Posts WHERE postid = $1`;
@@ -394,7 +394,7 @@ app.post("/process/:postId", async (req, res) => {
 
         const apiData = await getExecution.json();
 
-        console.log(apiData.content.status);
+        //console.log(apiData.content.status);
 
         const pppoopoo = JSON.stringify(
             apiData.content.results.output,
@@ -484,7 +484,7 @@ app.post("/login", (req, res, next) => {
             return res
                 .status(401)
                 .json({ success: false, message: info.message });
-
+        //console.log(user);
         const token = jwt.sign(
             { userid: user.userid, username: user.username },
             jwtSecret,
@@ -584,11 +584,37 @@ app.get("/test-authenticate-token", (req, res) => {
 });
 
 app.use("/current-user", authenticateToken);
-app.get("/current-user", (req, res) => {
+
+app.get("/current-user", authenticateToken, async (req, res) => {
+    console.log("hi");
+    const getUserUUID = async (username) => {
+        const query = "SELECT userID FROM Users WHERE username = $1";
+        const values = [username];
+        const client = await pool.connect();
+        try {
+            const result = await client.query(query, values);
+            return result.rows[0].userid;
+        } finally {
+            client.release();
+        }
+    };
+
+    try {
+        const userUUID = await getUserUUID(req.user.username);
+        res.send(userUUID);
+    } catch (error) {
+        console.error("Error fetching user UUID:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get("/current-username", authenticateToken, (req, res) => {
+    console.log(req.user);
     res.send(req.user.username);
 });
 
-app.post('/follow', async (req, res) => {
+app.post("/follow", async (req, res) => {
+    console.log("trying to follow");
     const client = await pool.connect();
 
     const { action, following_username, followed_username } = req.body;
@@ -596,23 +622,31 @@ app.post('/follow', async (req, res) => {
     try {
         // Get the UUIDs of the users from the Users table
         const getUserUUID = async (username) => {
-            const query = 'SELECT userID FROM Users WHERE username = $1';
+            const query = "SELECT userID FROM Users WHERE username = $1";
             const values = [username];
-            const result = await client.query(query, values);
-            return result.rows[0].userid;
+            const client = await pool.connect();
+            try {
+                const result = await client.query(query, values);
+                return result.rows[0].userid;
+            } finally {
+                client.release();
+            }
         };
 
         const followed_user_id = await getUserUUID(followed_username);
-        const following_user_id = '49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d'
+        const following_user_id = following_username;
 
-        if (action === 'follow') {
+        console.log(followed_user_id);
+        console.log(following_user_id);
+
+        if (action === "follow") {
             const query = `
                 INSERT INTO Follows (created_at, followingUserID, followedUserID)
                 VALUES (NOW(), $1, $2)
             `;
             const values = [following_user_id, followed_user_id];
             await client.query(query, values);
-        } else if (action === 'unfollow') {
+        } else if (action === "unfollow") {
             const query = `
                 DELETE FROM Follows
                 WHERE followingUserID = $1 AND followedUserID = $2
@@ -620,12 +654,13 @@ app.post('/follow', async (req, res) => {
             const values = [following_user_id, followed_user_id];
             await client.query(query, values);
         }
-        res.status(200).send('Success');
+        res.status(200).send("Success");
     } catch (err) {
-        console.error('Error updating follow status:', err);
-        res.status(500).send('Error');
+        console.error("Error updating follow status:", err);
+        res.status(500).send("Error");
     }
 });
+
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
     startWebSocketServer();
