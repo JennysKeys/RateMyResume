@@ -1,12 +1,39 @@
 let current_user = "";
 let current_receiver = "";
 const messageContainer = document.getElementById("message-container");
-let idToUserName = {
-    "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d": "Test User",
-};
+let idToUserName = {};
+async function getCurrentUserName() {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.error(
+                "User is current not logged in. Token cannot be found"
+            );
+            return null;
+        }
+        const response = await fetch("/current-username", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+
+        const userName = await response.text();
+        console.log("Current User UUID:", userName);
+        return userName;
+    } catch (error) {
+        console.error("Error fetching current user UUID:", error);
+    }
+}
 
 async function initPM() {
     current_user = await getCurrentUserUUID();
+    current_user_name = await getCurrentUserName();
+    idToUserName[current_user] = current_user_name;
     await populateFollowersList();
     console.log(current_user, "HJWSHDHDFH");
     const ws = new WebSocket(

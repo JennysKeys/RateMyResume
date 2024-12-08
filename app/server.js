@@ -608,7 +608,8 @@ app.get("/current-user", authenticateToken, async (req, res) => {
     }
 });
 
-app.get("/current-username", (req, res) => {
+app.get("/current-username", authenticateToken, (req, res) => {
+    console.log(req.user);
     res.send(req.user.username);
 });
 
@@ -659,6 +660,7 @@ app.post("/follow", async (req, res) => {
         res.status(500).send("Error");
     }
 });
+
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
     startWebSocketServer();
