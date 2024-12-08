@@ -449,13 +449,23 @@ async function initialize() {
             const html = await response.text();
             mainContainer.innerHTML = html;
 
-            const userNameElement = document.getElementById("user-name");
+            let followingList = await getFollowingList();
+
+            if (followingList.includes(currentProfileId)) {
+                const followButton = document.getElementById("follow-button");
+                followButton.innerHTML = "Unfollow";
+                followButton.style.backgroundColor = "gray";
+            }
+
+            const userNameElement =
+                document.getElementById("floating-user-name");
             userNameElement.textContent = username;
             inProfile = true;
             cardContainer = document.getElementById("card-container2");
             loadPosts(false, {}, false, userid);
 
             const followButton = document.getElementById("follow-button");
+
             followButton.addEventListener("click", async () => {
                 const action =
                     followButton.innerHTML === "Follow" ? "follow" : "unfollow";
@@ -466,6 +476,7 @@ async function initialize() {
                     },
                     body: JSON.stringify({
                         action: action,
+                        following_username: curr_user,
                         followed_username: username,
                     }),
                 });
