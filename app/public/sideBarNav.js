@@ -5,7 +5,8 @@ const searchButton = document.getElementById("searchButton");
 // Variable to store the current search term
 let currentSearchTerm = "";
 let curr_user = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
-
+let notInUserDetails = true;
+let currentProfileId = null;
 function openNav() {
     document.getElementById("mySidenav").style.width = "250px";
     document.getElementById("main").style.marginLeft = "250px";
@@ -18,7 +19,6 @@ function closeNav() {
 
 let cardContainer = document.getElementById("card-container");
 let loader = document.getElementById("loader");
-
 var throttleTimer;
 
 const HOME_PAGE = 0;
@@ -98,7 +98,7 @@ async function getFollowingList() {
         const body = await response.json();
         followingIds = body;
         followingIds = formatFollowingList(followingIds);
-        console.log(followingList);
+        console.log("followers: " + followingList);
         return followingIds;
     } catch (error) {
         console.log("Fetch error:", error);
@@ -122,27 +122,36 @@ async function loadPosts(needFilter, filters, followersOnly) {
         if (currentSearchTerm) {
             params.append("search", currentSearchTerm);
         }
+        let followingList = await getFollowingList();
+        console.log(followingList.length, "ehjfhf");
+
         if (followersOnly) {
-            let followingList = await getFollowingList();
-            params.append("currentUser", curr_user);
+            console.log("jdhjfjf");
             params.append("followingIds", followingList.join(","));
+            params.append("currentUser_followers", curr_user);
         }
+        if (!notInUserDetails && currentProfileId !== null) {
+            params.append("currentPostUserName", currentProfileId);
+        }
+
+        params.append("currentUser", curr_user);
+        params.append("viewersIds", followingList);
 
         let response;
 
-    if (needFilter) {
-      params.append("schools", filters.schools);
-      params.append("gpaMin", filters.gpaMin);
-      params.append("gpaMax", filters.gpaMax);
-      params.append("majors", filters.majors);
-      response = await fetch(
-        `http://localhost:3000/filter?${params.toString()}`
-      );
-    } else {
-      response = await fetch(
-        `http://localhost:3000/posts?${params.toString()}`
-      );
-    }
+        if (needFilter) {
+            params.append("schools", filters.schools);
+            params.append("gpaMin", filters.gpaMin);
+            params.append("gpaMax", filters.gpaMax);
+            params.append("majors", filters.majors);
+            response = await fetch(
+                `http://localhost:3000/filter?${params.toString()}`
+            );
+        } else {
+            response = await fetch(
+                `http://localhost:3000/posts?${params.toString()}`
+            );
+        }
 
         const posts = await response.json();
         console.log(posts.length, offset, limit);
@@ -176,8 +185,20 @@ async function loadPosts(needFilter, filters, followersOnly) {
             // Header div for username and date
             const headerContainer = document.createElement("div");
             headerContainer.className = "card-header";
+
             const usernameElement = document.createElement("h3");
             usernameElement.textContent = post.username;
+            usernameElement.style.cursor = "pointer";
+
+            // Add an event listener for username click
+
+            if (notInUserDetails) {
+                usernameElement.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    showUserDetail(post.username, post.userid);
+                });
+            }
+
             const dateElement = document.createElement("p");
             dateElement.textContent = timeSince(post.created_at);
 
@@ -367,6 +388,55 @@ async function showPostDetail(post) {
         });
 }
 
+async function showUserDetail(username, userid) {
+    notInUserDetails = false;
+    currentProfileId = userid;
+    const mainContainer = document.getElementById("main");
+
+    try {
+        const response = await fetch("userDetail.html");
+        const html = await response.text();
+        mainContainer.innerHTML = html;
+
+        const userNameElement = document.getElementById("user-name");
+        userNameElement.textContent = username;
+        inProfile = true;
+        cardContainer = document.getElementById("card-container2");
+        loadPosts(false, {}, false, userid);
+
+        const followButton = document.getElementById("follow-button");
+        followButton.addEventListener("click", async () => {
+            const action = followButton.innerHTML === 'Follow' ? 'follow' : 'unfollow';
+            const response = await fetch('/follow', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: action,
+                    followed_username: username
+                })
+            });
+
+            if (response.ok) {
+                if (action === 'follow') {
+                    followButton.innerHTML = 'Unfollow';
+                    followButton.style.backgroundColor = 'gray';
+                } else {
+                    followButton.innerHTML = 'Follow';
+                    followButton.style.backgroundColor = '';
+                }
+                console.log(`Follow button clicked for user: ${username}`);
+            } else {
+                console.error('Failed to update follow status');
+            }
+        });
+    } catch (error) {
+        console.error("Error loading user detail:", error);
+        mainContainer.innerHTML = "<p>Failed to load user details.</p>";
+    }
+}
+
 function displayComments(comments) {
     const commentsSection = document.getElementById("commentsSection");
     commentsSection.innerHTML = ""; // Clear existing comments
@@ -436,7 +506,13 @@ let handleInfiniteScroll = () => {
             document.body.offsetHeight - 30;
 
         if (endOfPage) {
-            loadPosts(false);
+            if (CURRENT_PAGE === HOME_PAGE) {
+                loadPosts(false);
+            } else if (CURRENT_PAGE === FOLLOWER_PAGE) {
+                loadPosts(false, {}, true);
+            } else if (!notInUserDetails && currentProfileId != null) {
+                loadPosts(false, {}, false, currentProfileId);
+            }
         }
     }, 100);
 };
@@ -447,6 +523,9 @@ let removeInfiniteScroll = () => {
 };
 
 window.onload = function () {
+    notInUserDetails = true;
+    currentProfileId = null;
+    cardContainer = document.getElementById("card-container");
     if (CURRENT_PAGE === HOME_PAGE) {
         loadPosts(false);
     } else if (CURRENT_PAGE === FOLLOWER_PAGE) {
@@ -466,8 +545,8 @@ window.onload = function () {
             localStorage.setItem("currentPage", FOLLOWER_PAGE);
             window.location.reload();
         });
-  slideOne();
-  slideTwo();
+    slideOne();
+    slideTwo();
 };
 
 window.addEventListener("scroll", handleInfiniteScroll);
@@ -535,6 +614,7 @@ function handleFiles(event) {
 }
 
 async function uploadPost() {
+    let friendsOnly = document.getElementById("friends-only");
     const titleInput = document.getElementById("title");
     const title = titleInput.value.trim();
     const errorMessageDiv = document.getElementById("errorMessage");
@@ -556,12 +636,14 @@ async function uploadPost() {
 
     const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
     const createdAt = new Date().toISOString();
+    let friends_only = friendsOnly.checked;
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("pdf", selectedFile);
     formData.append("created_at", createdAt);
     formData.append("user_uuid", userUUID);
+    formData.append("friends_only", friends_only);
 
     try {
         const response = await fetch("/postss", {

@@ -73,7 +73,7 @@ app.get("/filter", async (req, res) => {
         let queryParams = [];
         let parmsCount = 1;
 
-        if(search || schoolString || majorString || gpaMin) {
+        if (search || schoolString || majorString || gpaMin) {
             query += ` WHERE`;
         }
 
@@ -122,14 +122,14 @@ app.get("/filter", async (req, res) => {
                 firstMajor = false;
                 startWhere = false;
             }
-            query += ')'
+            query += ")";
         }
 
-        if(gpaMin) {
-            if(!startWhere) {
-                query += ' AND';
+        if (gpaMin) {
+            if (!startWhere) {
+                query += " AND";
             }
-            
+
             query += ` (Posts.gpa >= ${gpaMin} AND Posts.gpa <= ${gpaMax})`;
         }
 
@@ -174,6 +174,7 @@ app.get("/get-followers", async (req, res) => {
 app.get("/get-messages", async (req, res) => {
     const { senderID, receiverID } = req.query;
     const client = await pool.connect();
+
     try {
         const result = await client.query(
             "SELECT * FROM messages WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1) ORDER BY sent_at ASC",
@@ -212,30 +213,86 @@ app.get("/posts", async (req, res) => {
     const limit = parseInt(req.query.limit) || 2; // Number of posts to load per batch
     const offset = parseInt(req.query.offset) || 0; // Offset to start fetching posts from
     const search = req.query.search || ""; // Get the search term from query parameters
+    const currentPostUserName = req.query.currentPostUserName || ""; // Get the search term from query parameters
     const currentUser = req.query.currentUser || ""; // Get the search term from query parameters
+    const currentUser_followers = req.query.currentUser_followers || ""; // Get the search term from query parameters
     const followingIds = req.query.followingIds || ""; // Get the search term from query parameters
+    const viewersIds = req.query.viewersIds || ""; // Get the search term from query parameters
+
     console.log("id top" + followingIds);
     try {
         let query = `
-        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid
+        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid, Posts.userid, Posts.friends_only
         FROM Posts
         JOIN Users ON Posts.userid = Users.userID
       `;
 
         let queryParams = [];
+        let whereConditions = [];
 
         // If there's a search term, add a WHERE clause
         if (search) {
-            query += ` WHERE LOWER(Users.username) LIKE $1`;
+            whereConditions.push(`LOWER(Users.username) LIKE $1`);
             queryParams.push(`%${search.toLowerCase()}%`);
         }
 
-        if (currentUser && followingIds) {
-            console.log("current user: " + currentUser);
-            const idArr = followingIds.split(",");
-            console.log("ids: " + idArr);
-            query += `WHERE CAST(Posts.userid AS text) = ANY ($1::text[])`;
-            queryParams.push(idArr);
+        if (currentUser_followers) {
+            if (followingIds.length > 0) {
+                const idArr = followingIds.split(",");
+                console.log("ids: " + idArr);
+                whereConditions.push(
+                    `CAST(Posts.userid AS text) = ANY ($1::text[])`
+                );
+                queryParams.push(idArr);
+            } else {
+                return res.json([]);
+            }
+        }
+        if (currentPostUserName) {
+            console.log("HELLO");
+            console.log("loading posts for: " + currentPostUserName);
+            whereConditions.push(`Posts.userid = $1`);
+            queryParams.push(currentPostUserName);
+        }
+
+        if (currentUser) {
+            if (viewersIds.length > 0) {
+                console.log("checking in here");
+                const viewersArr = viewersIds.split(",");
+
+                if (currentUser_followers) {
+                    let justViewers = viewersIds.split(",");
+                    justViewers = justViewers.filter(
+                        (item) => item !== currentUser_followers
+                    );
+                    whereConditions.push(
+                        `(Posts.friends_only = FALSE OR (Posts.friends_only = TRUE AND CAST(Posts.userid AS text) = ANY ($${
+                            queryParams.length + 1
+                        }::text[])))`
+                    );
+                    queryParams.push(justViewers);
+                } else {
+                    whereConditions.push(
+                        `(Posts.friends_only = FALSE OR (Posts.friends_only = TRUE AND (Posts.userid = $${
+                            queryParams.length + 1
+                        } OR CAST(Posts.userid AS text) = ANY ($${
+                            queryParams.length + 2
+                        }::text[]))))`
+                    );
+                    queryParams.push(currentUser, viewersArr);
+                }
+            } else {
+                // If viewersIds is empty, only show public posts or the user's own posts
+                whereConditions.push(
+                    `(Posts.friends_only = FALSE OR Posts.userid = $${
+                        queryParams.length + 1
+                    })`
+                );
+                queryParams.push(currentUser);
+            }
+        }
+        if (whereConditions.length > 0) {
+            query += " WHERE " + whereConditions.join(" AND ");
         }
 
         // Add ORDER BY, LIMIT, and OFFSET clauses
@@ -248,6 +305,7 @@ app.get("/posts", async (req, res) => {
         console.log("SEARCH: ", query);
         console.log(queryParams);
         const result = await pool.query(query, queryParams);
+        console.log(result.rows);
         res.json(result.rows);
     } catch (error) {
         console.error("Error fetching posts:", error);
@@ -260,10 +318,10 @@ app.get("/posts", async (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 app.post("/postss", upload.single("pdf"), async (req, res) => {
-    const { title, user_uuid } = req.body;
+    const { title, user_uuid, friends_only } = req.body;
     const pdfBuffer = req.file ? req.file.buffer : null;
 
-    if (!title || !pdfBuffer || !user_uuid) {
+    if (!title || !pdfBuffer || !user_uuid || !friends_only) {
         return res
             .status(400)
             .send("Title, PDF file, and userID are required.");
@@ -271,10 +329,10 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
 
     try {
         const query = `
-            INSERT INTO Posts (title, pdf, created_at, userid)
-            VALUES ($1, $2, CURRENT_TIMESTAMP, $3) RETURNING postid
+            INSERT INTO Posts (title, pdf, created_at, userid, friends_only)
+            VALUES ($1, $2, CURRENT_TIMESTAMP, $3, $4) RETURNING postid
         `;
-        const values = [title, pdfBuffer, user_uuid];
+        const values = [title, pdfBuffer, user_uuid, friends_only];
         const result = await pool.query(query, values);
         const postId = result.rows[0].postid;
 
@@ -396,10 +454,13 @@ passport.use(
 );
 
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
 
-    if (!token) return res.status(401).json({ message: "Access denied. Token missing." });
+    if (!token)
+        return res
+            .status(401)
+            .json({ message: "Access denied. Token missing." });
 
     jwt.verify(token, jwtSecret, (err, user) => {
         if (err) return res.status(403).json({ message: "Invalid token." });
@@ -433,23 +494,23 @@ app.post("/login", (req, res, next) => {
     })(req, res, next);
 });
 
-app.post('/comments', async (req, res) => {
+app.post("/comments", async (req, res) => {
     const { comment, postId } = req.body;
     const userid = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
-  
-    try {
-      const result = await pool.query(
-        'INSERT INTO comments (body, created_at, resumeid, userid) VALUES ($1, CURRENT_TIMESTAMP, $2, $3) RETURNING *',
-        [comment, postId, userid]
-      );
-      res.status(201).json(result.rows[0]); 
-    } catch (error) {
-      console.error("Error saving comment:", error);
-      res.status(500).send("Internal Server Error");
-    }
-  });
 
-  app.get('/comments/:postId', async (req, res) => {
+    try {
+        const result = await pool.query(
+            "INSERT INTO comments (body, created_at, resumeid, userid) VALUES ($1, CURRENT_TIMESTAMP, $2, $3) RETURNING *",
+            [comment, postId, userid]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error("Error saving comment:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get("/comments/:postId", async (req, res) => {
     const { postId } = req.params;
 
     try {
@@ -472,12 +533,17 @@ app.post("/create-user", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-        return res.status(400).json({ error: "Username and password are required" });
+        return res
+            .status(400)
+            .json({ error: "Username and password are required" });
     }
 
     try {
         // Check if username already exists
-        const userCheck = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+        const userCheck = await pool.query(
+            "SELECT * FROM users WHERE username = $1",
+            [username]
+        );
         if (userCheck.rows.length > 0) {
             return res.status(400).json({ error: "Username already exists" });
         }
@@ -498,15 +564,63 @@ app.post("/create-user", async (req, res) => {
         });
     } catch (error) {
         console.error("Error creating user:", error);
-        res.status(500).json({ error: "An error occurred while creating the user" });
+        res.status(500).json({
+            error: "An error occurred while creating the user",
+        });
     }
 });
 
 app.use("/test-authenticate-token", authenticateToken);
 app.get("/test-authenticate-token", (req, res) => {
-    res.json({ message: "You have access to /test-authenticate-token!", user: req.user });
+    res.json({
+        message: "You have access to /test-authenticate-token!",
+        user: req.user,
+    });
 });
 
+app.use("/current-user", authenticateToken);
+app.get("/current-user", (req, res) => {
+    res.send(req.user.username);
+});
+
+app.post('/follow', async (req, res) => {
+    const client = await pool.connect();
+
+    const { action, following_username, followed_username } = req.body;
+
+    try {
+        // Get the UUIDs of the users from the Users table
+        const getUserUUID = async (username) => {
+            const query = 'SELECT userID FROM Users WHERE username = $1';
+            const values = [username];
+            const result = await client.query(query, values);
+            return result.rows[0].userid;
+        };
+
+        const followed_user_id = await getUserUUID(followed_username);
+        const following_user_id = '49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d'
+
+        if (action === 'follow') {
+            const query = `
+                INSERT INTO Follows (created_at, followingUserID, followedUserID)
+                VALUES (NOW(), $1, $2)
+            `;
+            const values = [following_user_id, followed_user_id];
+            await client.query(query, values);
+        } else if (action === 'unfollow') {
+            const query = `
+                DELETE FROM Follows
+                WHERE followingUserID = $1 AND followedUserID = $2
+            `;
+            const values = [following_user_id, followed_user_id];
+            await client.query(query, values);
+        }
+        res.status(200).send('Success');
+    } catch (err) {
+        console.error('Error updating follow status:', err);
+        res.status(500).send('Error');
+    }
+});
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
     startWebSocketServer();
