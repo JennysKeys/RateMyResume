@@ -42,15 +42,10 @@
             <label for="psw"><b>Password</b></label>
             <input type="password" id="psw" placeholder="Enter Password" name="psw" required>
             <button type="submit">Login</button>
-            <label for="remember">
-                <input type="checkbox" id="remember" checked="checked" name="remember"> Remember me
-            </label>
         </div>
 
-        <div class="container" style="background-color:#f1f1f1">
-            <button type="button" onclick="document.getElementById('login').style.display='none'" class="cancelbtn">Cancel</button>
-            <span class="psw">Forgot <a href="#">password?</a></span>
-        </div>
+        <button type="button" id="createAccountButton">Create account</button>
+
     </form>
 </div>
 
@@ -64,6 +59,7 @@
 </script>
 <script src="login.js"></script>
 <script src="logout.js"></script>
+<script src="createUser.js"></script>
 <script src="fetchTestAuthenticate.js"></script>
 </body>
 </html>

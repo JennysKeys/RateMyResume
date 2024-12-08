@@ -525,6 +525,11 @@ app.get("/test-authenticate-token", (req, res) => {
     });
 });
 
+app.use("/current-user", authenticateToken);
+app.get("/current-user", (req, res) => {
+    res.send(req.user.username);
+});
+
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
     startWebSocketServer();
