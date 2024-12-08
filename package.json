@@ -11,6 +11,9 @@
         "pg": "^8.13.1",
         "ws": "^8.18.0"
     },
+    "engines": {
+        "node": "16.x"
+    },
     "scripts": {
         "start": "cd app && node server.js"
     }

@@ -9,6 +9,9 @@ const FOLLOWER_PAGE = 2;
 let offset = 0;
 const limit = 2; //Number of posts to load per batch
 
+const hostname = "0.0.0.0";
+const port = 8080;
+
 let cardNum = 0;
 // Get references to the search input and button
 const searchInput = document.getElementById("searchInput");
@@ -22,7 +25,13 @@ let currentProfileId = null;
 async function getCurrentUserUUID() {
     try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:3000/current-user", {
+        if (!token) {
+            console.error(
+                "User is current not logged in. Token cannot be found"
+            );
+            return null;
+        }
+        const response = await fetch("/current-user", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -193,13 +202,9 @@ async function initialize() {
                 params.append("gpaMin", filters.gpaMin);
                 params.append("gpaMax", filters.gpaMax);
                 params.append("majors", filters.majors);
-                response = await fetch(
-                    `http://localhost:3000/filter?${params.toString()}`
-                );
+                response = await fetch(`/filter?${params.toString()}`);
             } else {
-                response = await fetch(
-                    `http://localhost:3000/posts?${params.toString()}`
-                );
+                response = await fetch(`/posts?${params.toString()}`);
             }
 
             const posts = await response.json();

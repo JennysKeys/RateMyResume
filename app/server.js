@@ -8,8 +8,13 @@ const multer = require("multer");
 
 const app = express();
 
-const port = 3000;
-const hostname = "localhost";
+const port = parseInt(process.env.PORT) || 8080;
+const hostname = "0.0.0.0";
+
+// if(process.env.NODE_ENV == "production") {
+//     hostname = "0.0.0.0";
+// }
+
 const dotenv = require("dotenv").config();
 const jwtSecret = process.env.JWT_SECRET;
 const cors = require("cors");
@@ -581,6 +586,7 @@ app.get("/test-authenticate-token", (req, res) => {
 app.use("/current-user", authenticateToken);
 
 app.get("/current-user", authenticateToken, async (req, res) => {
+    console.log("hi");
     const getUserUUID = async (username) => {
         const query = "SELECT userID FROM Users WHERE username = $1";
         const values = [username];
@@ -654,6 +660,6 @@ app.post("/follow", async (req, res) => {
     }
 });
 app.listen(port, hostname, () => {
-    //console.log(`Listening at: http://${hostname}:${port}`);
+    console.log(`Listening at: http://${hostname}:${port}`);
     startWebSocketServer();
 });

@@ -11,8 +11,8 @@ function loginUser(event) {
         },
         body: JSON.stringify({ username, password }),
     })
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
             if (data.success) {
                 localStorage.setItem("token", data.token);
                 alert("Login successful!");
@@ -21,7 +21,7 @@ function loginUser(event) {
             }
             console.log(data); // prints the
         })
-        .catch(error => {
+        .catch((error) => {
             console.error("Error:", error);
         });
 }

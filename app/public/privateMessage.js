@@ -10,7 +10,7 @@ async function initPM() {
     await populateFollowersList();
     console.log(current_user, "HJWSHDHDFH");
     const ws = new WebSocket(
-        "ws://localhost:3001/?userID=" + encodeURIComponent(current_user)
+        `wss://${hostname}:443/?userID=` + encodeURIComponent(current_user)
     );
 
     ws.onopen = (event) => {
