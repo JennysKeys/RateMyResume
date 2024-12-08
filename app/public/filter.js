@@ -8,7 +8,7 @@ let minGap = 0;
 let sliderTrack = document.querySelector(".slider-track");
 let sliderMaxValue = document.getElementById("slider-1").max;
 
-filterForm.addEventListener("click", filter);
+button.addEventListener("click", filter);
 
 function filter(event) {
   let inputs = form.getElementsByTagName("input");
