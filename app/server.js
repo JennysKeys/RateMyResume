@@ -212,35 +212,86 @@ app.get("/posts", async (req, res) => {
     const limit = parseInt(req.query.limit) || 2; // Number of posts to load per batch
     const offset = parseInt(req.query.offset) || 0; // Offset to start fetching posts from
     const search = req.query.search || ""; // Get the search term from query parameters
+    const currentPostUserName = req.query.currentPostUserName || ""; // Get the search term from query parameters
     const currentUser = req.query.currentUser || ""; // Get the search term from query parameters
+    const currentUser_followers = req.query.currentUser_followers || ""; // Get the search term from query parameters
     const followingIds = req.query.followingIds || ""; // Get the search term from query parameters
+    const viewersIds = req.query.viewersIds || ""; // Get the search term from query parameters
+
     console.log("id top" + followingIds);
     try {
         let query = `
-        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid, Posts.userid
+        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid, Posts.userid, Posts.friends_only
         FROM Posts
         JOIN Users ON Posts.userid = Users.userID
       `;
 
         let queryParams = [];
+        let whereConditions = [];
 
         // If there's a search term, add a WHERE clause
         if (search) {
-            query += ` WHERE LOWER(Users.username) LIKE $1`;
+            whereConditions.push(`LOWER(Users.username) LIKE $1`);
             queryParams.push(`%${search.toLowerCase()}%`);
         }
 
-        if (currentUser && followingIds) {
-            console.log("current user: " + currentUser);
-            const idArr = followingIds.split(",");
-            console.log("ids: " + idArr);
-            query += `WHERE CAST(Posts.userid AS text) = ANY ($1::text[])`;
-            queryParams.push(idArr);
-        } else if (currentUser) {
+        if (currentUser_followers) {
+            if (followingIds.length > 0) {
+                const idArr = followingIds.split(",");
+                console.log("ids: " + idArr);
+                whereConditions.push(
+                    `CAST(Posts.userid AS text) = ANY ($1::text[])`
+                );
+                queryParams.push(idArr);
+            } else {
+                return res.json([]);
+            }
+        }
+        if (currentPostUserName) {
             console.log("HELLO");
-            console.log("loading posts for: " + currentUser);
-            query += `WHERE Posts.userid = $1`;
-            queryParams.push(currentUser);
+            console.log("loading posts for: " + currentPostUserName);
+            whereConditions.push(`Posts.userid = $1`);
+            queryParams.push(currentPostUserName);
+        }
+
+        if (currentUser) {
+            if (viewersIds.length > 0) {
+                console.log("checking in here");
+                const viewersArr = viewersIds.split(",");
+
+                if (currentUser_followers) {
+                    let justViewers = viewersIds.split(",");
+                    justViewers = justViewers.filter(
+                        (item) => item !== currentUser_followers
+                    );
+                    whereConditions.push(
+                        `(Posts.friends_only = FALSE OR (Posts.friends_only = TRUE AND CAST(Posts.userid AS text) = ANY ($${
+                            queryParams.length + 1
+                        }::text[])))`
+                    );
+                    queryParams.push(justViewers);
+                } else {
+                    whereConditions.push(
+                        `(Posts.friends_only = FALSE OR (Posts.friends_only = TRUE AND (Posts.userid = $${
+                            queryParams.length + 1
+                        } OR CAST(Posts.userid AS text) = ANY ($${
+                            queryParams.length + 2
+                        }::text[]))))`
+                    );
+                    queryParams.push(currentUser, viewersArr);
+                }
+            } else {
+                // If viewersIds is empty, only show public posts or the user's own posts
+                whereConditions.push(
+                    `(Posts.friends_only = FALSE OR Posts.userid = $${
+                        queryParams.length + 1
+                    })`
+                );
+                queryParams.push(currentUser);
+            }
+        }
+        if (whereConditions.length > 0) {
+            query += " WHERE " + whereConditions.join(" AND ");
         }
 
         // Add ORDER BY, LIMIT, and OFFSET clauses
@@ -253,6 +304,7 @@ app.get("/posts", async (req, res) => {
         console.log("SEARCH: ", query);
         console.log(queryParams);
         const result = await pool.query(query, queryParams);
+        console.log(result.rows);
         res.json(result.rows);
     } catch (error) {
         console.error("Error fetching posts:", error);
@@ -265,10 +317,10 @@ app.get("/posts", async (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 app.post("/postss", upload.single("pdf"), async (req, res) => {
-    const { title, user_uuid } = req.body;
+    const { title, user_uuid, friends_only } = req.body;
     const pdfBuffer = req.file ? req.file.buffer : null;
 
-    if (!title || !pdfBuffer || !user_uuid) {
+    if (!title || !pdfBuffer || !user_uuid || !friends_only) {
         return res
             .status(400)
             .send("Title, PDF file, and userID are required.");
@@ -276,10 +328,10 @@ app.post("/postss", upload.single("pdf"), async (req, res) => {
 
     try {
         const query = `
-            INSERT INTO Posts (title, pdf, created_at, userid)
-            VALUES ($1, $2, CURRENT_TIMESTAMP, $3) RETURNING postid
+            INSERT INTO Posts (title, pdf, created_at, userid, friends_only)
+            VALUES ($1, $2, CURRENT_TIMESTAMP, $3, $4) RETURNING postid
         `;
-        const values = [title, pdfBuffer, user_uuid];
+        const values = [title, pdfBuffer, user_uuid, friends_only];
         const result = await pool.query(query, values);
         const postId = result.rows[0].postid;
 

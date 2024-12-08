@@ -98,7 +98,7 @@ async function getFollowingList() {
         const body = await response.json();
         followingIds = body;
         followingIds = formatFollowingList(followingIds);
-        console.log(followingList);
+        console.log("followers: " + followingList);
         return followingIds;
     } catch (error) {
         console.log("Fetch error:", error);
@@ -122,15 +122,20 @@ async function loadPosts(needFilter, filters, followersOnly) {
         if (currentSearchTerm) {
             params.append("search", currentSearchTerm);
         }
+        let followingList = await getFollowingList();
+        console.log(followingList.length, "ehjfhf");
+
         if (followersOnly) {
             console.log("jdhjfjf");
-            let followingList = await getFollowingList();
-            params.append("currentUser", curr_user);
             params.append("followingIds", followingList.join(","));
+            params.append("currentUser_followers", curr_user);
         }
         if (!notInUserDetails && currentProfileId !== null) {
-            params.append("currentUser", currentProfileId);
+            params.append("currentPostUserName", currentProfileId);
         }
+
+        params.append("currentUser", curr_user);
+        params.append("viewersIds", followingList);
 
         let response;
 
@@ -386,8 +391,6 @@ async function showPostDetail(post) {
 async function showUserDetail(username, userid) {
     notInUserDetails = false;
     currentProfileId = userid;
-    console.log("helllo,ikjkjk");
-    console.log(userid);
     const mainContainer = document.getElementById("main");
 
     try {
@@ -482,7 +485,13 @@ let handleInfiniteScroll = () => {
             document.body.offsetHeight - 30;
 
         if (endOfPage) {
-            loadPosts(false);
+            if (CURRENT_PAGE === HOME_PAGE) {
+                loadPosts(false);
+            } else if (CURRENT_PAGE === FOLLOWER_PAGE) {
+                loadPosts(false, {}, true);
+            } else if (!notInUserDetails && currentProfileId != null) {
+                loadPosts(false, {}, false, currentProfileId);
+            }
         }
     }, 100);
 };
@@ -584,6 +593,7 @@ function handleFiles(event) {
 }
 
 async function uploadPost() {
+    let friendsOnly = document.getElementById("friends-only");
     const titleInput = document.getElementById("title");
     const title = titleInput.value.trim();
     const errorMessageDiv = document.getElementById("errorMessage");
@@ -605,12 +615,14 @@ async function uploadPost() {
 
     const userUUID = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
     const createdAt = new Date().toISOString();
+    let friends_only = friendsOnly.checked;
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("pdf", selectedFile);
     formData.append("created_at", createdAt);
     formData.append("user_uuid", userUUID);
+    formData.append("friends_only", friends_only);
 
     try {
         const response = await fetch("/postss", {
