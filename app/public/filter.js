@@ -3,11 +3,12 @@ let sliderOne = document.getElementById("slider-1");
 let sliderTwo = document.getElementById("slider-2");
 let displayValOne = document.getElementById("range1");
 let displayValTwo = document.getElementById("range2");
+let button = document.getElementById("submit-button");
 let minGap = 0;
 let sliderTrack = document.querySelector(".slider-track");
 let sliderMaxValue = document.getElementById("slider-1").max;
 
-filterForm.addEventListener("submit", filter);
+filterForm.addEventListener("click", filter);
 
 function filter(event) {
   let inputs = form.getElementsByTagName("input");
