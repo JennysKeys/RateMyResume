@@ -36,8 +36,10 @@ async function initPM() {
     idToUserName[current_user] = current_user_name;
     await populateFollowersList();
     console.log(current_user, "HJWSHDHDFH");
+
     const ws = new WebSocket(
-        `wss://${hostname}:443/?userID=` + encodeURIComponent(current_user)
+        `wss://rate-my-resume-261857140775.us-east4.run.app/?userID=` +
+            encodeURIComponent(current_user)
     );
 
     ws.onopen = (event) => {
