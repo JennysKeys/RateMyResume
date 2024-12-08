@@ -149,11 +149,11 @@ async function loadPosts(needFilter, filters, followersOnly) {
             params.append("gpaMax", filters.gpaMax);
             params.append("majors", filters.majors);
             response = await fetch(
-                `http://${hostname}:${port}/filter?${params.toString()}`
+                `/filter?${params.toString()}`
             );
         } else {
             response = await fetch(
-                `http://${hostname}:${port}/posts?${params.toString()}`
+                `/posts?${params.toString()}`
             );
         }
 
