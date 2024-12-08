@@ -10,6 +10,11 @@ const app = express();
 
 const port = parseInt(process.env.PORT) || 8080;
 const hostname = "localhost";
+
+if(process.env.NODE_ENV == "production") {
+    hostname = "0.0.0.0";
+}
+
 const dotenv = require("dotenv").config();
 const jwtSecret = process.env.JWT_SECRET;
 const cors = require("cors");
