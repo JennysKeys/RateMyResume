@@ -1,3 +1,7 @@
+const hostname = "0.0.0.0";
+const port = 8080;
+
+
 let cardNum = 0;
 // Get references to the search input and button
 const searchInput = document.getElementById("searchInput");
@@ -145,11 +149,11 @@ async function loadPosts(needFilter, filters, followersOnly) {
             params.append("gpaMax", filters.gpaMax);
             params.append("majors", filters.majors);
             response = await fetch(
-                `http://localhost:3000/filter?${params.toString()}`
+                `http://${hostname}:${port}/filter?${params.toString()}`
             );
         } else {
             response = await fetch(
-                `http://localhost:3000/posts?${params.toString()}`
+                `http://${hostname}:${port}/posts?${params.toString()}`
             );
         }
 
