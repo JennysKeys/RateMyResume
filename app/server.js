@@ -73,7 +73,7 @@ app.get("/filter", async (req, res) => {
         let queryParams = [];
         let parmsCount = 1;
 
-        if(search || schoolString || majorString || gpaMin) {
+        if (search || schoolString || majorString || gpaMin) {
             query += ` WHERE`;
         }
 
@@ -122,14 +122,14 @@ app.get("/filter", async (req, res) => {
                 firstMajor = false;
                 startWhere = false;
             }
-            query += ')'
+            query += ")";
         }
 
-        if(gpaMin) {
-            if(!startWhere) {
-                query += ' AND';
+        if (gpaMin) {
+            if (!startWhere) {
+                query += " AND";
             }
-            
+
             query += ` (Posts.gpa >= ${gpaMin} AND Posts.gpa <= ${gpaMax})`;
         }
 
@@ -217,7 +217,7 @@ app.get("/posts", async (req, res) => {
     console.log("id top" + followingIds);
     try {
         let query = `
-        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid
+        SELECT Users.username, Posts.title, Posts.created_at, Posts.pdf, Posts.postid, Posts.userid
         FROM Posts
         JOIN Users ON Posts.userid = Users.userID
       `;
@@ -236,6 +236,11 @@ app.get("/posts", async (req, res) => {
             console.log("ids: " + idArr);
             query += `WHERE CAST(Posts.userid AS text) = ANY ($1::text[])`;
             queryParams.push(idArr);
+        } else if (currentUser) {
+            console.log("HELLO");
+            console.log("loading posts for: " + currentUser);
+            query += `WHERE Posts.userid = $1`;
+            queryParams.push(currentUser);
         }
 
         // Add ORDER BY, LIMIT, and OFFSET clauses
@@ -396,10 +401,13 @@ passport.use(
 );
 
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
 
-    if (!token) return res.status(401).json({ message: "Access denied. Token missing." });
+    if (!token)
+        return res
+            .status(401)
+            .json({ message: "Access denied. Token missing." });
 
     jwt.verify(token, jwtSecret, (err, user) => {
         if (err) return res.status(403).json({ message: "Invalid token." });
@@ -433,23 +441,23 @@ app.post("/login", (req, res, next) => {
     })(req, res, next);
 });
 
-app.post('/comments', async (req, res) => {
+app.post("/comments", async (req, res) => {
     const { comment, postId } = req.body;
     const userid = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
-  
-    try {
-      const result = await pool.query(
-        'INSERT INTO comments (body, created_at, resumeid, userid) VALUES ($1, CURRENT_TIMESTAMP, $2, $3) RETURNING *',
-        [comment, postId, userid]
-      );
-      res.status(201).json(result.rows[0]); 
-    } catch (error) {
-      console.error("Error saving comment:", error);
-      res.status(500).send("Internal Server Error");
-    }
-  });
 
-  app.get('/comments/:postId', async (req, res) => {
+    try {
+        const result = await pool.query(
+            "INSERT INTO comments (body, created_at, resumeid, userid) VALUES ($1, CURRENT_TIMESTAMP, $2, $3) RETURNING *",
+            [comment, postId, userid]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error("Error saving comment:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get("/comments/:postId", async (req, res) => {
     const { postId } = req.params;
 
     try {
@@ -472,12 +480,17 @@ app.post("/create-user", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-        return res.status(400).json({ error: "Username and password are required" });
+        return res
+            .status(400)
+            .json({ error: "Username and password are required" });
     }
 
     try {
         // Check if username already exists
-        const userCheck = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+        const userCheck = await pool.query(
+            "SELECT * FROM users WHERE username = $1",
+            [username]
+        );
         if (userCheck.rows.length > 0) {
             return res.status(400).json({ error: "Username already exists" });
         }
@@ -498,13 +511,18 @@ app.post("/create-user", async (req, res) => {
         });
     } catch (error) {
         console.error("Error creating user:", error);
-        res.status(500).json({ error: "An error occurred while creating the user" });
+        res.status(500).json({
+            error: "An error occurred while creating the user",
+        });
     }
 });
 
 app.use("/test-authenticate-token", authenticateToken);
 app.get("/test-authenticate-token", (req, res) => {
-    res.json({ message: "You have access to /test-authenticate-token!", user: req.user });
+    res.json({
+        message: "You have access to /test-authenticate-token!",
+        user: req.user,
+    });
 });
 
 app.listen(port, hostname, () => {
