@@ -479,7 +479,7 @@ app.post("/login", (req, res, next) => {
             return res
                 .status(401)
                 .json({ success: false, message: info.message });
-
+        console.log(user);
         const token = jwt.sign(
             { userid: user.userid, username: user.username },
             jwtSecret,
@@ -579,11 +579,30 @@ app.get("/test-authenticate-token", (req, res) => {
 });
 
 app.use("/current-user", authenticateToken);
-app.get("/current-user", (req, res) => {
-    res.send(req.user.username);
+
+app.get("/current-user", authenticateToken, async (req, res) => {
+    const getUserUUID = async (username) => {
+        const query = "SELECT userID FROM Users WHERE username = $1";
+        const values = [username];
+        const client = await pool.connect();
+        try {
+            const result = await client.query(query, values);
+            return result.rows[0].userid;
+        } finally {
+            client.release();
+        }
+    };
+
+    try {
+        const userUUID = await getUserUUID(req.user.username);
+        res.send(userUUID);
+    } catch (error) {
+        console.error("Error fetching user UUID:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
-app.post('/follow', async (req, res) => {
+app.post("/follow", async (req, res) => {
     const client = await pool.connect();
 
     const { action, following_username, followed_username } = req.body;
@@ -591,23 +610,23 @@ app.post('/follow', async (req, res) => {
     try {
         // Get the UUIDs of the users from the Users table
         const getUserUUID = async (username) => {
-            const query = 'SELECT userID FROM Users WHERE username = $1';
+            const query = "SELECT userID FROM Users WHERE username = $1";
             const values = [username];
             const result = await client.query(query, values);
             return result.rows[0].userid;
         };
 
         const followed_user_id = await getUserUUID(followed_username);
-        const following_user_id = '49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d'
+        const following_user_id = "49b6e479-fab2-4e6e-a2ed-3f7c5950ab9d";
 
-        if (action === 'follow') {
+        if (action === "follow") {
             const query = `
                 INSERT INTO Follows (created_at, followingUserID, followedUserID)
                 VALUES (NOW(), $1, $2)
             `;
             const values = [following_user_id, followed_user_id];
             await client.query(query, values);
-        } else if (action === 'unfollow') {
+        } else if (action === "unfollow") {
             const query = `
                 DELETE FROM Follows
                 WHERE followingUserID = $1 AND followedUserID = $2
@@ -615,10 +634,10 @@ app.post('/follow', async (req, res) => {
             const values = [following_user_id, followed_user_id];
             await client.query(query, values);
         }
-        res.status(200).send('Success');
+        res.status(200).send("Success");
     } catch (err) {
-        console.error('Error updating follow status:', err);
-        res.status(500).send('Error');
+        console.error("Error updating follow status:", err);
+        res.status(500).send("Error");
     }
 });
 app.listen(port, hostname, () => {
