@@ -8,6 +8,12 @@ const multer = require("multer");
 
 const app = express();
 
+const http = require("http");
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
+const url = require("url");
+
 const port = parseInt(process.env.PORT) || 8080;
 const hostname = "0.0.0.0";
 
@@ -39,6 +45,45 @@ const pool = new Pool({
         require: true,
     },
 });
+
+io.on("connection", (socket) => {
+    console.log("Client connected");
+
+    let queryParams = url.parse(socket.handshake.url, true).query;
+    let userID = queryParams.userID;
+    socket.userID = userID;
+
+    socket.on("message", (message) => {
+        let parsedMessage = JSON.parse(message);
+        io.sockets.sockets.forEach((client) => {
+            if (client.userID === parsedMessage.receiverID) {
+                client.send(parsedMessage);
+            }
+        });
+    });
+
+    socket.on("disconnect", () => {
+        console.log("Client disconnected");
+    });
+});
+
+// server.listen(port, () => {
+//     console.log(`Socket.io server running on port ${port}`);
+// });
+
+function broadcastMessage2(message) {
+    console.log(message);
+    console.log("hello");
+
+    io.sockets.sockets.forEach((client) => {
+        console.log(client.userID);
+        if (client.userID === message.receiver_id) {
+            console.log(client.userID);
+            console.log("sending msg");
+            client.send(JSON.stringify(message));
+        }
+    });
+}
 
 app.get("/database", async (req, res) => {
     //console.log("connected");
@@ -204,7 +249,7 @@ app.post("/send-message", async (req, res) => {
             [senderID, receiverID, content]
         );
         let message = result.rows[0];
-        broadcastMessage(message);
+        broadcastMessage2(message);
         res.json(message);
     } catch (err) {
         console.error("Error sending message:", err);
@@ -661,7 +706,10 @@ app.post("/follow", async (req, res) => {
     }
 });
 
-app.listen(port, hostname, () => {
+// app.listen(port, hostname, () => {
+//     //startWebSocketServer();
+// });
+server.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
-    startWebSocketServer();
+    console.log(`Socket.io server running on port ${port}`);
 });

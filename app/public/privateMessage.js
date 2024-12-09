@@ -2,6 +2,7 @@ let current_user = "";
 let current_receiver = "";
 const messageContainer = document.getElementById("message-container");
 let idToUserName = {};
+
 async function getCurrentUserName() {
     try {
         const token = localStorage.getItem("token");
@@ -37,18 +38,51 @@ async function initPM() {
     await populateFollowersList();
     console.log(current_user, "HJWSHDHDFH");
 
-    const ws = new WebSocket(
-        `wss://rate-my-resume-261857140775.us-east4.run.app/?userID=` +
-            encodeURIComponent(current_user)
-    );
+    // const ws = new WebSocket(
+    //     `wss://rate-my-resume-261857140775.us-east4.run.app/?userID=` +
+    //         encodeURIComponent(current_user)
+    // );
 
-    ws.onopen = (event) => {
-        console.log("Connected to WS");
-    };
+    // ws.onopen = (event) => {
+    //     console.log("Connected to WS");
+    // };
 
-    ws.onmessage = (event) => {
+    // ws.onmessage = (event) => {
+    //     console.log("hi");
+    //     let msgData = JSON.parse(event.data);
+    //     console.log(msgData);
+    //     console.log(current_user, msgData.receiverID);
+    //     console.log(current_receiver, msgData.sender_id);
+
+    //     if (
+    //         msgData.receiver_id === current_user &&
+    //         msgData.sender_id === current_receiver
+    //     ) {
+    //         console.log("ion here");
+    //         let div = document.createElement("div");
+    //         div.textContent = `${idToUserName[msgData.sender_id]}: ${
+    //             msgData.content
+    //         }`;
+    //         messageContainer.appendChild(div);
+    //         scrollToBottom();
+    //     }
+    // };
+
+    // ws.onclose = (event) => {
+    //     console.log("Disconnected from WebSocket server");
+    // };
+
+    const socket = io(`wss://rate-my-resume-261857140775.us-east4.run.app`, {
+        query: { userID: encodeURIComponent(current_user) },
+    });
+
+    socket.on("connect", () => {
+        console.log("Connected to Socket.io server");
+    });
+
+    socket.on("message", (event) => {
         console.log("hi");
-        let msgData = JSON.parse(event.data);
+        let msgData = JSON.parse(event);
         console.log(msgData);
         console.log(current_user, msgData.receiverID);
         console.log(current_receiver, msgData.sender_id);
@@ -65,11 +99,11 @@ async function initPM() {
             messageContainer.appendChild(div);
             scrollToBottom();
         }
-    };
+    });
 
-    ws.onclose = (event) => {
-        console.log("Disconnected from WebSocket server");
-    };
+    socket.on("disconnect", () => {
+        console.log("Disconnected from Socket.io server");
+    });
 
     async function getFollowers() {
         const url = "/database";
