@@ -1,4 +1,5 @@
 function logoutUser() {
+    console.log("logging out");
     localStorage.removeItem("token");
     alert("You have been logged out.");
 

@@ -60,7 +60,11 @@
                     + Create
                 </div>
                 <a href="index.html">
-                    <div class="profile-container" data-tooltip="Open Profile">
+                    <div
+                        class="profile-container"
+                        data-tooltip="Logout"
+                        onclick="logoutUser()"
+                    >
                         <img
                             class="profile"
                             src="icons/profile.jpeg"
@@ -200,5 +204,6 @@
         <script src="privateMessage.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
         <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+        <script src="logout.js"></script>
     </body>
 </html>

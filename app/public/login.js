@@ -16,6 +16,7 @@ function loginUser(event) {
             if (data.success) {
                 localStorage.setItem("token", data.token);
                 alert("Login successful!");
+                window.location.href = "/mainPage.html";
             } else {
                 alert("Invalid credentials");
             }
