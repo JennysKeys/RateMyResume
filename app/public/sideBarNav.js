@@ -470,35 +470,46 @@ async function initialize() {
             loadPosts(false, {}, false, userid);
 
             const followButton = document.getElementById("follow-button");
+            const chatButton = document.getElementById("chat-button");
 
-            followButton.addEventListener("click", async () => {
-                const action =
-                    followButton.innerHTML === "Follow" ? "follow" : "unfollow";
-                const response = await fetch("/follow", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        action: action,
-                        following_username: curr_user,
-                        followed_username: username,
-                    }),
-                });
+            if (currentProfileId === curr_user) {
+                followButton.disabled = true;
+                followButton.style.display = "none";
+                chatButton.style.display = "none";
+            } else {
+                followButton.addEventListener("click", async () => {
+                    const action =
+                        followButton.innerHTML === "Follow"
+                            ? "follow"
+                            : "unfollow";
+                    const response = await fetch("/follow", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            action: action,
+                            following_username: curr_user,
+                            followed_username: username,
+                        }),
+                    });
 
-                if (response.ok) {
-                    if (action === "follow") {
-                        followButton.innerHTML = "Unfollow";
-                        followButton.style.backgroundColor = "gray";
+                    if (response.ok) {
+                        if (action === "follow") {
+                            followButton.innerHTML = "Unfollow";
+                            followButton.style.backgroundColor = "gray";
+                        } else {
+                            followButton.innerHTML = "Follow";
+                            followButton.style.backgroundColor = "";
+                        }
+                        console.log(
+                            `Follow button clicked for user: ${username}`
+                        );
                     } else {
-                        followButton.innerHTML = "Follow";
-                        followButton.style.backgroundColor = "";
+                        console.error("Failed to update follow status");
                     }
-                    console.log(`Follow button clicked for user: ${username}`);
-                } else {
-                    console.error("Failed to update follow status");
-                }
-            });
+                });
+            }
         } catch (error) {
             console.error("Error loading user detail:", error);
             mainContainer.innerHTML = "<p>Failed to load user details.</p>";
