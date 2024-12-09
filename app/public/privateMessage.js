@@ -3,6 +3,9 @@ let current_receiver = "";
 const messageContainer = document.getElementById("message-container");
 let idToUserName = {};
 
+let url = window.location.href;
+let slicedURL = url.slice(0, 19);
+
 async function getCurrentUserName() {
     try {
         const token = localStorage.getItem("token");
@@ -38,7 +41,13 @@ async function initPM() {
     await populateFollowersList();
     console.log(current_user, "HJWSHDHDFH");
 
-    const socket = io(`wss://rate-my-resume-261857140775.us-east4.run.app`, {
+    let socketURL = "";
+    if (slicedURL === "http://0.0.0.0:8080") {
+        socketURL = slicedURL;
+    } else {
+        socketURL = `wss://rate-my-resume-261857140775.us-east4.run.app`;
+    }
+    const socket = io(socketURL, {
         query: { userID: encodeURIComponent(current_user) },
     });
 
