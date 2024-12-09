@@ -326,47 +326,47 @@ async function initialize() {
                 // buttonsContainer.style.paddingTop = "10px"; // Add some padding
                 buttonsContainer.className = "buttonsContainer"; // Use a class for styling
 
-                let buttonUp = createCardBtn(
-                    "fas fa-arrow-up",
-                    "10px",
-                    "10px",
-                    `buttonUp${index + offset}`,
-                    () => console.log("up button clicked")
-                );
-                let buttonDown = createCardBtn(
-                    "fas fa-arrow-down",
-                    "10px",
-                    "50px",
-                    `buttonDown${index + offset}`,
-                    () => console.log("down button clicked")
-                );
+                // let buttonUp = createCardBtn(
+                //     "fas fa-arrow-up",
+                //     "10px",
+                //     "10px",
+                //     `buttonUp${index + offset}`,
+                //     () => console.log("up button clicked")
+                // );
+                // let buttonDown = createCardBtn(
+                //     "fas fa-arrow-down",
+                //     "10px",
+                //     "50px",
+                //     `buttonDown${index + offset}`,
+                //     () => console.log("down button clicked")
+                // );
                 let buttonComment = createCardBtn(
                     "fas fa-comment",
                     "10px",
-                    "90px",
+                    "10px",
                     `buttonComment${index + offset}`,
                     () => console.log("comment button clicked")
                 );
-                let buttonSave = createCardBtn(
-                    "fas fa-bookmark",
-                    "10px",
-                    "130px",
-                    `buttonSave${index + offset}`,
-                    () => console.log("save button clicked")
-                );
-                let buttonShare = createCardBtn(
-                    "fas fa-share",
-                    "10px",
-                    "170px",
-                    `buttonShare${index + offset}`,
-                    () => console.log("share button clicked")
-                );
+                // let buttonSave = createCardBtn(
+                //     "fas fa-bookmark",
+                //     "10px",
+                //     "130px",
+                //     `buttonSave${index + offset}`,
+                //     () => console.log("save button clicked")
+                // );
+                // let buttonShare = createCardBtn(
+                //     "fas fa-share",
+                //     "10px",
+                //     "170px",
+                //     `buttonShare${index + offset}`,
+                //     () => console.log("share button clicked")
+                // );
 
-                buttonsContainer.appendChild(buttonUp);
-                buttonsContainer.appendChild(buttonDown);
+                //buttonsContainer.appendChild(buttonUp);
+                //buttonsContainer.appendChild(buttonDown);
                 buttonsContainer.appendChild(buttonComment);
-                buttonsContainer.appendChild(buttonSave);
-                buttonsContainer.appendChild(buttonShare);
+                //buttonsContainer.appendChild(buttonSave);
+                //buttonsContainer.appendChild(buttonShare);
 
                 card.appendChild(buttonsContainer);
                 cardContainer.appendChild(card);
