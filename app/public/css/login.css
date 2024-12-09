@@ -12,7 +12,7 @@ body {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
     padding-top: 60px;
 }
 
@@ -25,7 +25,8 @@ body {
     max-width: 500px;
 }
 
-input[type=text], input[type=password] {
+input[type="text"],
+input[type="password"] {
     width: 100%;
     padding: 12px 20px;
     margin: 8px 0;
@@ -35,7 +36,7 @@ input[type=text], input[type=password] {
 }
 
 button {
-    background-color: #BADD20;
+    background-color: #badd20;
     color: white;
     padding: 14px 20px;
     margin: 8px 0;
@@ -59,7 +60,6 @@ button:hover {
     margin: 24px 0 12px 0;
     position: relative;
 }
-
 
 .container {
     padding: 16px;
@@ -91,13 +91,21 @@ span.psw {
 }
 
 @-webkit-keyframes animatezoom {
-    from {-webkit-transform: scale(0)}
-    to {-webkit-transform: scale(1)}
+    from {
+        -webkit-transform: scale(0);
+    }
+    to {
+        -webkit-transform: scale(1);
+    }
 }
 
 @keyframes animatezoom {
-    from {transform: scale(0)}
-    to {transform: scale(1)}
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
 }
 
 @media screen and (max-width: 300px) {
@@ -108,4 +116,43 @@ span.psw {
     .cancelbtn {
         width: 100%;
     }
+}
+
+/* Center the container vertically and horizontally */
+.square-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Full viewport height */
+}
+
+.background-square {
+    position: absolute;
+    width: 300px; /* Adjust width as needed */
+    height: 300px; /* Adjust height as needed */
+    background-color: white; /* Change to desired color */
+    z-index: 0; /* Ensure it is behind the buttons */
+    border: 5px solid #badd20;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1; /* Ensure it is in front of the background square */
+}
+
+.button-container button {
+    width: 200px; /* Set a fixed width */
+    height: 50px; /* Set a fixed height */
+    margin: 10px 0; /* Add some space between buttons */
+    font-size: 16px; /* Optional: Adjust font size for consistency */
+}
+.button-container h2.title {
+    margin-bottom: 20px; /* Add space between title and buttons */
+    font-size: 24px; /* Adjust font size as needed */
+    color: #badd20;
 }

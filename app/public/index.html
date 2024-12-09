@@ -26,16 +26,25 @@
             </div>
         </div>
 
-        <button
-            onclick="document.getElementById('login').style.display='block'"
-            style="width: auto"
-        >
-            Login
-        </button>
-        <button id="logoutButton" style="width: auto">Logout</button>
-        <button id="fetchTestAuthenticateTokenButton" style="width: auto">
-            Call /test-authenticate-token
-        </button>
+        <div class="square-wrapper">
+            <div class="background-square"></div>
+            <div class="button-container">
+                <h2 class="title">Rate My Resume</h2>
+                <button
+                    onclick="document.getElementById('login').style.display='block'"
+                    style="width: 250px"
+                >
+                    Login
+                </button>
+                <button id="logoutButton" style="width: 250px">Logout</button>
+                <button
+                    id="fetchTestAuthenticateTokenButton"
+                    style="width: 250px"
+                >
+                    Call /test-authenticate-token
+                </button>
+            </div>
+        </div>
 
         <div id="login" class="modal">
             <form id="loginForm" class="modal-content animate">
