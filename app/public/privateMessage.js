@@ -38,40 +38,6 @@ async function initPM() {
     await populateFollowersList();
     console.log(current_user, "HJWSHDHDFH");
 
-    // const ws = new WebSocket(
-    //     `wss://rate-my-resume-261857140775.us-east4.run.app/?userID=` +
-    //         encodeURIComponent(current_user)
-    // );
-
-    // ws.onopen = (event) => {
-    //     console.log("Connected to WS");
-    // };
-
-    // ws.onmessage = (event) => {
-    //     console.log("hi");
-    //     let msgData = JSON.parse(event.data);
-    //     console.log(msgData);
-    //     console.log(current_user, msgData.receiverID);
-    //     console.log(current_receiver, msgData.sender_id);
-
-    //     if (
-    //         msgData.receiver_id === current_user &&
-    //         msgData.sender_id === current_receiver
-    //     ) {
-    //         console.log("ion here");
-    //         let div = document.createElement("div");
-    //         div.textContent = `${idToUserName[msgData.sender_id]}: ${
-    //             msgData.content
-    //         }`;
-    //         messageContainer.appendChild(div);
-    //         scrollToBottom();
-    //     }
-    // };
-
-    // ws.onclose = (event) => {
-    //     console.log("Disconnected from WebSocket server");
-    // };
-
     const socket = io(`wss://rate-my-resume-261857140775.us-east4.run.app`, {
         query: { userID: encodeURIComponent(current_user) },
     });
