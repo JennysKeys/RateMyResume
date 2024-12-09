@@ -33,7 +33,6 @@ app.use(express.json());
 app.use(passport.initialize());
 
 const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
-const { startWebSocketServer, broadcastMessage } = require("./websocket");
 
 const pool = new Pool({
     host: PGHOST,
@@ -706,9 +705,6 @@ app.post("/follow", async (req, res) => {
     }
 });
 
-// app.listen(port, hostname, () => {
-//     //startWebSocketServer();
-// });
 server.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
     console.log(`Socket.io server running on port ${port}`);
